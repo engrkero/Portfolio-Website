@@ -87,21 +87,43 @@ const ContactForm: React.FC = () => {
 
     setFormState({ status: 'SUBMITTING', message: '' });
     
-    const emailJsData = {
-      service_id: 'service_8dahcgn',
-      template_id: 'template_7v5gy0k',
-      user_id: 'g3UReINHkzHP4_W1S',
+    // 1. Send Notification to Owner
+    const notificationData = {
+      service_id: 'service_q739y9g',
+      template_id: 'template_89tgujo',
+      user_id: 'VafLS1D-6suQGIkES',
       template_params: formData,
     };
 
+    // 2. Send Auto-Reply to User
+    const autoReplyData = {
+      service_id: 'service_q739y9g',
+      template_id: 'template_w6fbo4n',
+      user_id: 'VafLS1D-6suQGIkES',
+      template_params: {
+        ...formData,
+        // Ensure the template uses 'to_email' or '_replyto' in the "To Email" field settings in dashboard
+        to_name: formData.name, 
+      },
+    };
+
     try {
+      // Send the main notification first
       const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emailJsData),
+        body: JSON.stringify(notificationData),
       });
 
       if (response.ok) {
+        // If notification successful, attempt to send auto-reply
+        // We don't await this to keep UI responsive, or we catch errors silently
+        fetch('https://api.emailjs.com/api/v1.0/email/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(autoReplyData),
+        }).catch(err => console.error('Auto-reply failed to send:', err));
+
         setFormState({ status: 'SUCCESS', message: "Thanks for your message! I'll get back to you soon." });
         setFormData({ name: '', _replyto: '', subject: '', message: '' });
         setTouched({});
@@ -118,6 +140,7 @@ const ContactForm: React.FC = () => {
       <div className="w-full p-8 bg-white rounded-lg shadow-xl text-center">
         <h3 className="text-2xl font-bold text-green-600 mb-4">Message Sent!</h3>
         <p className="text-gray-600">{formState.message}</p>
+        <p className="text-sm text-gray-400 mt-2">Check your email for a confirmation.</p>
       </div>
     );
   }
