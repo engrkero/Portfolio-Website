@@ -1,29 +1,44 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Section from './Section';
 import AnimatedSection from './AnimatedSection';
 
 const About: React.FC = () => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const frameRef = useRef<number>(0);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
     
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
+    // Throttle via requestAnimationFrame
+    cancelAnimationFrame(frameRef.current);
+    
+    const { clientX, clientY } = e;
+    const rect = cardRef.current.getBoundingClientRect();
+    
+    frameRef.current = requestAnimationFrame(() => {
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
 
-    const rotateX = ((y - centerY) / centerY) * -5; // Max 5 deg rotation
-    const rotateY = ((x - centerX) / centerX) * 5;
+        const rotateX = ((y - centerY) / centerY) * -5; // Max 5 deg rotation
+        const rotateY = ((x - centerX) / centerX) * 5;
 
-    setRotation({ x: rotateX, y: rotateY });
+        setRotation({ x: rotateX, y: rotateY });
+    });
   };
 
   const handleMouseLeave = () => {
+    cancelAnimationFrame(frameRef.current);
     setRotation({ x: 0, y: 0 });
   };
+  
+  // Cleanup
+  useEffect(() => {
+      return () => cancelAnimationFrame(frameRef.current);
+  }, []);
 
   return (
     <Section id="about" title="About Me" className="bg-gray-50 relative overflow-hidden">
@@ -39,7 +54,7 @@ const About: React.FC = () => {
                 ref={cardRef}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
-                className="glass-card-3d max-w-4xl mx-auto p-8 md:p-12 rounded-3xl transform transition-transform duration-100 ease-out"
+                className="glass-card-3d max-w-4xl mx-auto p-8 md:p-12 rounded-3xl transform transition-transform duration-100 ease-out will-change-transform"
                 style={{
                     transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
                 }}

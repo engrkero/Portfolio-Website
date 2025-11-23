@@ -10,28 +10,42 @@ const ProjectCard3D: React.FC<{ project: Project; onCardClick: (project: Project
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
+  const frameRef = useRef<number>(0);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
     
+    cancelAnimationFrame(frameRef.current);
+
+    const { clientX, clientY } = e;
     const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
+    
+    frameRef.current = requestAnimationFrame(() => {
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
 
-    // Calculate rotation based on mouse position (max 8 degrees)
-    const rotateX = ((y - centerY) / centerY) * -8;
-    const rotateY = ((x - centerX) / centerX) * 8;
+        // Calculate rotation based on mouse position (max 8 degrees)
+        const rotateX = ((y - centerY) / centerY) * -8;
+        const rotateY = ((x - centerX) / centerX) * 8;
 
-    setRotation({ x: rotateX, y: rotateY });
+        setRotation({ x: rotateX, y: rotateY });
+    });
   };
 
   const handleMouseEnter = () => setIsHovering(true);
+  
   const handleMouseLeave = () => {
+    cancelAnimationFrame(frameRef.current);
     setIsHovering(false);
     setRotation({ x: 0, y: 0 });
   };
+  
+  // Cleanup
+  useEffect(() => {
+      return () => cancelAnimationFrame(frameRef.current);
+  }, []);
 
   return (
     <div 
@@ -43,7 +57,7 @@ const ProjectCard3D: React.FC<{ project: Project; onCardClick: (project: Project
     >
         <div 
             ref={cardRef}
-            className="relative h-full bg-white rounded-2xl transition-all duration-100 ease-out preserve-3d cursor-pointer border border-gray-100"
+            className="relative h-full bg-white rounded-2xl transition-all duration-100 ease-out preserve-3d cursor-pointer border border-gray-100 will-change-transform"
             style={{
                 transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale(${isHovering ? 1.02 : 1})`,
                 boxShadow: isHovering 
@@ -62,6 +76,7 @@ const ProjectCard3D: React.FC<{ project: Project; onCardClick: (project: Project
                     src={project.imageUrl} 
                     alt={project.title} 
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    loading="lazy"
                 />
                 <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-300 ${isHovering ? 'opacity-100' : 'opacity-0'}`}>
                     <span className="text-white font-bold text-lg px-4 py-2 border-2 border-white rounded-full transform translate-y-4 transition-transform duration-300"

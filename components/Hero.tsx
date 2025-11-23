@@ -7,9 +7,11 @@ const Hero: React.FC = () => {
     const fullText = "KERO GRAPHICS STUDIO CODE";
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const parallaxRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
     
-    // Parallax State
-    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    // Performance: Use ref instead of state to avoid re-renders on every mouse move
+    const mouseRef = useRef({ x: 0, y: 0 });
 
     // Typing Effect
     useEffect(() => {
@@ -21,15 +23,14 @@ const Hero: React.FC = () => {
         }
     }, [typedText]);
 
-    // Mouse Move for Parallax
+    // Mouse Move Listener - Optimized to just update ref
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
-            if (!containerRef.current) return;
             const { innerWidth, innerHeight } = window;
-            // Increased range and sensitivity for more dynamic Web3 feel
-            const x = (e.clientX / innerWidth - 0.5) * 40; 
-            const y = (e.clientY / innerHeight - 0.5) * 40; 
-            setMousePos({ x, y });
+            // Calculate normalized coordinates (-1 to 1)
+            const x = (e.clientX / innerWidth - 0.5) * 2; 
+            const y = (e.clientY / innerHeight - 0.5) * 2; 
+            mouseRef.current = { x, y };
         };
 
         window.addEventListener('mousemove', handleMouseMove);
@@ -47,7 +48,7 @@ const Hero: React.FC = () => {
         }
     };
 
-    // Enhanced Cosmic Particle Animation Effect
+    // Consolidated Animation Loop (Canvas + DOM Transforms)
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -59,7 +60,7 @@ const Hero: React.FC = () => {
 
         // Brand colors but very subtle for white theme
         const colors = ['rgba(42, 50, 75, 0.3)', 'rgba(240, 84, 79, 0.25)', 'rgba(248, 180, 98, 0.25)', 'rgba(200, 200, 200, 0.3)'];
-        const particleCount = window.innerWidth < 768 ? 40 : 100;
+        const particleCount = window.innerWidth < 768 ? 30 : 80; // Reduced count for performance
         
         class Particle {
             x: number;
@@ -80,14 +81,14 @@ const Hero: React.FC = () => {
                 this.baseY = this.y;
                 this.size = Math.random() * 2 + 0.5;
                 this.color = colors[Math.floor(Math.random() * colors.length)];
-                this.speedX = Math.random() * 0.8 - 0.4;
-                this.speedY = Math.random() * 0.8 - 0.4;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
                 this.density = (Math.random() * 30) + 1;
                 this.angle = Math.random() * 360;
             }
 
-            update(mouseX: number, mouseY: number) {
-                // Autonomous breathing motion (independent of mouse)
+            update() {
+                // Autonomous breathing motion
                 this.angle += 0.02;
                 const breatheX = Math.sin(this.angle) * 0.5;
                 const breatheY = Math.cos(this.angle) * 0.5;
@@ -95,6 +96,7 @@ const Hero: React.FC = () => {
                 this.x += this.speedX + breatheX;
                 this.y += this.speedY + breatheY;
 
+                // Wrap around screen
                 if (this.x > width) this.x = 0;
                 else if (this.x < 0) this.x = width;
                 if (this.y > height) this.y = 0;
@@ -115,15 +117,21 @@ const Hero: React.FC = () => {
         }
 
         const drawConnections = () => {
+            // Optimization: Only check a subset or reduce checks if needed
+            // For now, standard N^2 check is fine for < 100 particles
             for (let i = 0; i < particles.length; i++) {
                 for (let j = i + 1; j < particles.length; j++) {
                     const dx = particles[i].x - particles[j].x;
                     const dy = particles[i].y - particles[j].y;
+                    
+                    // Optimization: Manhattan distance check first to avoid sqrt
+                    if (Math.abs(dx) > 120 || Math.abs(dy) > 120) continue;
+
                     const distance = Math.sqrt(dx * dx + dy * dy);
 
                     if (distance < 120) {
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(200, 200, 200, ${1 - distance / 120})`; // Very subtle grey lines
+                        ctx.strokeStyle = `rgba(200, 200, 200, ${1 - distance / 120})`;
                         ctx.lineWidth = 0.4;
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
@@ -134,18 +142,38 @@ const Hero: React.FC = () => {
         };
 
         let animationId: number;
+        
+        // Main Animation Loop
         const animate = () => {
             ctx.clearRect(0, 0, width, height);
             
-            // Subtle drift based on mouse + autonomous update
+            // 1. Update Canvas Particles
+            const mouseX = mouseRef.current.x * 20; // Scale effect
+            const mouseY = mouseRef.current.y * 20;
+
             particles.forEach(p => {
-                p.x += (mousePos.x * 0.05); 
-                p.y += (mousePos.y * 0.05);
-                p.update(0, 0);
+                // Apply slight parallax to particles based on mouse
+                p.x += (mouseX * 0.02); 
+                p.y += (mouseY * 0.02);
+                p.update();
                 p.draw(ctx);
             });
-            
             drawConnections();
+            
+            // 2. Direct DOM Manipulation for 3D Elements (High Performance)
+            // This avoids React renders for the parallax effect
+            if (parallaxRef.current) {
+                const rotX = -mouseRef.current.y * 15; // Max degrees
+                const rotY = mouseRef.current.x * 15;
+                parallaxRef.current.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+            }
+
+            if (contentRef.current) {
+                const rotX = -mouseRef.current.y * 5;
+                const rotY = mouseRef.current.x * 5;
+                contentRef.current.style.transform = `translateZ(30px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+            }
+
             animationId = requestAnimationFrame(animate);
         };
 
@@ -162,7 +190,7 @@ const Hero: React.FC = () => {
             cancelAnimationFrame(animationId);
             window.removeEventListener('resize', handleResize);
         };
-    }, [mousePos]);
+    }, []); // Empty dependency array ensures this only mounts ONCE
 
   return (
     <section 
@@ -178,26 +206,24 @@ const Hero: React.FC = () => {
 
         {/* 3D Floating Elements - Enhanced for Web3 Feel */}
         <div 
-            className="absolute inset-0 z-0 pointer-events-none preserve-3d transition-transform duration-100 ease-out"
-            style={{
-                transform: `rotateX(${-mousePos.y * 1.2}deg) rotateY(${mousePos.x * 1.2}deg)`
-            }}
+            ref={parallaxRef}
+            className="absolute inset-0 z-0 pointer-events-none preserve-3d will-change-transform"
         >
-            {/* Cosmic Glows - Subtle White/Grey Theme */}
+            {/* Cosmic Glows */}
             <div className="absolute top-[20%] left-[10%] w-96 h-96 bg-gray-100 rounded-full blur-3xl opacity-60 animate-pulse" 
-                 style={{ transform: `translateZ(-50px) translateX(${mousePos.x * -1}px)` }}></div>
+                 style={{ transform: `translateZ(-50px)` }}></div>
             
             <div className="absolute bottom-[10%] right-[10%] w-80 h-80 bg-blue-50 rounded-full blur-3xl opacity-50 animate-float-slow" 
-                 style={{ transform: `translateZ(-80px) translateY(${mousePos.y * -1}px)` }}></div>
+                 style={{ transform: `translateZ(-80px)` }}></div>
 
-            {/* Floating 3D Prisms/Shapes - Separated Transform & Animation */}
+            {/* Floating 3D Prisms/Shapes */}
             <div className="absolute top-[15%] right-[20%] hidden md:block preserve-3d"
-                 style={{ transform: `translateZ(60px) rotate(${mousePos.x * 2}deg)` }}>
+                 style={{ transform: `translateZ(60px)` }}>
                 <div className="w-24 h-24 border border-gray-200/50 rounded-2xl bg-white/20 backdrop-blur-md shadow-xl animate-float-medium animate-breathe"></div>
             </div>
             
             <div className="absolute bottom-[25%] left-[15%] hidden md:block preserve-3d"
-                 style={{ transform: `translateZ(80px) rotate(${-mousePos.y * 2}deg)` }}>
+                 style={{ transform: `translateZ(80px)` }}>
                  <div className="w-16 h-16 border border-[#F0544F]/20 rounded-xl bg-white/20 backdrop-blur-md shadow-xl animate-float-slow animate-breathe-delayed"></div>
             </div>
             
@@ -205,18 +231,19 @@ const Hero: React.FC = () => {
              <div className="absolute top-[40%] left-[5%] w-8 h-8 rounded-full bg-[#F8B462]/10 blur-sm animate-float-slow"
                   style={{ transform: `translateZ(30px)` }}></div>
                  
-            {/* Geometric Grid Lines - subtle background detail */}
+            {/* Geometric Grid Lines */}
             <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:60px_60px]"
                  style={{ transform: `translateZ(-100px) scale(1.5)` }}></div>
         </div>
 
-      <div className="text-center px-6 z-10 relative preserve-3d" 
-           style={{ transform: `translateZ(30px) rotateX(${-mousePos.y * 0.5}deg) rotateY(${mousePos.x * 0.5}deg)` }}>
+      <div 
+           ref={contentRef}
+           className="text-center px-6 z-10 relative preserve-3d will-change-transform"
+      >
         <AnimatedSection>
           <div className="relative inline-block">
              {/* Dynamic Halo behind text */}
-             <div className="absolute -inset-10 bg-gradient-to-r from-[#2A324B]/5 via-[#F0544F]/5 to-[#F8B462]/5 blur-3xl rounded-full opacity-80 transform transition-transform duration-500 animate-pulse-slow"
-                  style={{ transform: `translate(${mousePos.x * 5}px, ${mousePos.y * 5}px)` }}></div>
+             <div className="absolute -inset-10 bg-gradient-to-r from-[#2A324B]/5 via-[#F0544F]/5 to-[#F8B462]/5 blur-3xl rounded-full opacity-80 animate-pulse-slow"></div>
              
              <h1 className="relative text-4xl md:text-7xl font-extrabold tracking-tight min-h-[6rem] md:min-h-[5rem] drop-shadow-sm transform transition-transform duration-200"
                  style={{ transform: `translateZ(60px)` }}>
