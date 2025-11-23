@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export interface Skill {
@@ -12,19 +11,6 @@ export interface TimelineItem {
   title: string;
   subtitle: string;
   description: string;
-}
-
-export interface Project {
-  id: string; // Added for Admin Management
-  title: string;
-  category: string;
-  description: string;
-  imageUrl: string;
-  tags: string[];
-  liveUrl?: string;
-  repoUrl?: string;
-  longDescription?: string;
-  detailImages?: string[];
 }
 
 export interface Achievement {
@@ -42,4 +28,17 @@ export interface Testimonial {
     quote: string;
     avatarUrl: string;
     date?: string;
+}
+
+export interface Project {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  imageUrl: string;
+  tags: string[];
+  liveUrl?: string;
+  repoUrl?: string;
+  longDescription?: string;
+  detailImages?: string[];
 }
