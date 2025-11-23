@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 
 // FIX: Removed import for 'MenuIcon' (not exported) and unused 'XIcon'. The menu button is CSS-based.
@@ -46,6 +47,7 @@ const Header: React.FC = () => {
     { href: '#skills', label: 'Skills' },
     { href: '#experience', label: 'Experience' },
     { href: '#portfolio', label: 'Portfolio' },
+    { href: '#services', label: 'Services' }, // Added Services Link
     { href: '#achievements', label: 'Achievements' },
     { href: '#education', label: 'Education' },
     { href: '#contact', label: 'Contact' },

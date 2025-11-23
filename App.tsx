@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
@@ -20,10 +21,12 @@ function App() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setLoading(false);
+         setLoading(false);
     }, 2500); // Preloader duration
 
-    return () => clearTimeout(timer);
+    return () => {
+        clearTimeout(timer);
+    };
   }, []);
 
   return (

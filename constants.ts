@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { Skill, TimelineItem, Project, Achievement, Testimonial } from './types';
 import { GithubIcon, LinkedinIcon, TwitterIcon, FacebookIcon, InstagramIcon, WhatsappIcon, ReactIcon, FigmaIcon, AdobeSuiteIcon, TailwindCssIcon, UiUxIcon, GraphicDesignIcon, CodeIcon, TypescriptIcon, BrainIcon, UsersIcon, ClockIcon, HeartIcon, GlobeIcon, SmileIcon, BriefcaseIcon, TrophyIcon, BlockchainIcon, GraduationCapIcon, IdCardIcon, ComputerIcon } from './components/icons';
@@ -135,6 +136,50 @@ export const TRAININGS: TimelineItem[] = [
 
 export const PROJECTS: Project[] = [
   {
+    id: 'proj_1',
+    title: 'ZenithPay Mobile Banking',
+    category: 'UI/UX Design',
+    description: 'A futuristic mobile banking interface featuring biometric security and AI-driven financial insights.',
+    imageUrl: 'https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?q=80&w=2068&auto=format&fit=crop',
+    tags: ['Figma', 'FinTech', 'User Research', 'Prototyping'],
+    liveUrl: '#',
+    longDescription: 'ZenithPay reimagines the banking experience for the Gen Z demographic. The project involved extensive user research to identify pain points in traditional banking apps. The solution features a dark-mode first design, intuitive gesture-based navigation, and a "Financial Wellness" dashboard that visualizes spending habits using 3D interactive charts. Key deliverables included user personas, wireframes, and a high-fidelity clickable prototype.',
+    detailImages: [
+        'https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?q=80&w=2070&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1616077168079-7e09a677fb2c?q=80&w=2070&auto=format&fit=crop'
+    ]
+  },
+  {
+    id: 'proj_2',
+    title: 'VestRight Investment Platform',
+    category: 'Frontend Development',
+    description: 'A comprehensive investment dashboard for tracking stocks, crypto, and real estate assets in real-time.',
+    imageUrl: 'https://images.unsplash.com/photo-1611974765270-ca12586343bb?q=80&w=2070&auto=format&fit=crop',
+    tags: ['React', 'D3.js', 'API Integration', 'Tailwind'],
+    liveUrl: '#',
+    repoUrl: '#',
+    longDescription: 'VestRight is a robust web application built for modern investors. It integrates with multiple financial APIs to provide real-time data visualization. I utilized React for the frontend architecture and D3.js for rendering complex candlestick charts and portfolio distribution graphs. The platform includes a secure user authentication system and a responsive layout that works seamlessly across desktop and tablet devices.',
+    detailImages: [
+        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=2070&auto=format&fit=crop'
+    ]
+  },
+  {
+    id: 'proj_3',
+    title: 'SwiftLogistics Global',
+    category: 'Frontend Development',
+    description: 'A high-performance corporate website for a shipping and logistics company with shipment tracking.',
+    imageUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop',
+    tags: ['Next.js', 'Framer Motion', 'SEO'],
+    liveUrl: '#',
+    longDescription: 'SwiftLogistics Global required a digital presence that reflected reliability and speed. I developed a multi-page website using Next.js for server-side rendering and superior SEO performance. The site features a "Track Your Shipment" widget, an interactive global network map, and dynamic service pages. The design utilizes a professional blue and white color palette with subtle animations to guide user attention.',
+    detailImages: [
+        'https://images.unsplash.com/photo-1494412574643-35d324698427?q=80&w=2053&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1578575437130-527eed3abbec?q=80&w=2070&auto=format&fit=crop'
+    ]
+  },
+  {
+    id: 'proj_4',
     title: 'Mara Scent Sales Campaign',
     category: 'Graphic Design',
     description: 'High-impact promotional flyer for Mara Scent\'s "Biggest Sales of the Year" event.',
@@ -144,115 +189,46 @@ export const PROJECTS: Project[] = [
     detailImages: ['https://images.unsplash.com/photo-1596462502278-27bfdd403348?q=80&w=2066&auto=format&fit=crop', 'https://images.unsplash.com/photo-1595867357798-5dfdd8a4d939?q=80&w=2070&auto=format&fit=crop']
   },
   {
-    title: 'Mara Scent Corporate Identity',
+    id: 'proj_5',
+    title: 'EcoLife Brand Identity',
     category: 'Graphic Design',
-    description: 'Professional letterhead design ensuring brand consistency for official communications.',
-    imageUrl: 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?q=80&w=2070&auto=format&fit=crop',
-    tags: ['Illustrator', 'Branding', 'Stationery'],
-    longDescription: 'Created a clean and professional letterhead as part of Mara Scent\'s corporate identity package. The design incorporates the logo watermark and brand colors to maintain a cohesive look across all business documents, reinforcing the brand\'s professional image.',
-    detailImages: ['https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2064&auto=format&fit=crop']
+    description: 'Complete branding package including logo, color palette, and business cards for an eco-friendly startup.',
+    imageUrl: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=2071&auto=format&fit=crop',
+    tags: ['Illustrator', 'Branding', 'Logo Design'],
+    longDescription: 'EcoLife needed a brand identity that communicated sustainability and innovation. I created a minimalist logo combining a leaf and a lightbulb motif. The project deliverables included a comprehensive brand style guide, business card designs, and social media assets, ensuring a consistent visual language across all touchpoints.',
+    detailImages: ['https://images.unsplash.com/photo-1600692925375-9b854378565a?q=80&w=1974&auto=format&fit=crop']
   },
   {
-    title: 'Blissful Drinks Branding',
-    category: 'Graphic Design',
-    description: 'Creative and playful logo design for a beverage brand featuring cloud elements.',
-    imageUrl: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?q=80&w=2070&auto=format&fit=crop',
-    tags: ['Logo Design', 'Illustrator', 'Typography'],
-    longDescription: 'Developed a playful and memorable logo for "Blissful Drinks". The concept merges the imagery of bottles with clouds to evoke a sense of lightness and enjoyment. The typography is custom-styled to match the fluid and organic feel of the brand.',
-    detailImages: ['https://images.unsplash.com/photo-1573554761328-c883511e42c3?q=80&w=2070&auto=format&fit=crop']
+    id: 'proj_6',
+    title: 'Bigg Manuel Portfolio',
+    category: 'Frontend Development',
+    description: 'A dynamic personal portfolio and brand website created for Bigg Manuel, featuring a custom design system.',
+    imageUrl: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=2055&auto=format&fit=crop',
+    tags: ['React', 'UI/UX', 'Animation'],
+    liveUrl: 'https://www.biggmanuel.netlify.app',
+    longDescription: 'Crafted a unique digital identity for Bigg Manuel. This project emphasized visual storytelling and brand consistency. The site features a modern aesthetic, smooth scrolling animations, and a showcase of creative works. It was engineered to be fast, SEO-friendly, and easily maintainable.',
+    detailImages: ['https://images.unsplash.com/photo-1517292987719-0369a794ec0f?q=80&w=1974&auto=format&fit=crop']
   },
   {
-    title: 'Election Campaign Flyer',
+    id: 'proj_7',
+    title: 'Tech Summit 2024',
     category: 'Graphic Design',
-    description: 'Campaign materials for Comrade Kalu Chinomso Gold\'s Student Union election bid.',
+    description: 'Event branding and promotional materials for a major technology conference in Calabar.',
     imageUrl: 'https://images.unsplash.com/photo-1544531586-fde5298cdd40?q=80&w=2070&auto=format&fit=crop',
-    tags: ['Flyer Design', 'Political Campaign', 'Print Design'],
-    longDescription: 'Designed a compelling political campaign flyer for Comrade Kalu Chinomso Gold running for Vice President. The design highlights the candidate\'s image, name, and position with a bold, authoritative layout suitable for an election campaign, ensuring high visibility and readability.',
+    tags: ['Print Design', 'Event Branding', 'Photoshop'],
+    longDescription: 'I developed the visual theme for Tech Summit 2024, creating a cohesive look for banners, ID tags, flyers, and stage backdrops. The design utilizes geometric shapes and a "glitch" effect to convey a sense of cutting-edge technology and digital transformation.',
     detailImages: ['https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2032&auto=format&fit=crop']
   },
   {
+    id: 'proj_8',
     title: 'GreenDeck Africa',
     category: 'Frontend Development',
-    description: 'A comprehensive web platform designed for GreenDeck Africa, focusing on sustainability, environmental solutions, and corporate presence.',
-    imageUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    description: 'A comprehensive web platform focusing on sustainability and environmental solutions.',
+    imageUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop',
     tags: ['React', 'Tailwind CSS', 'Responsive Design'],
     liveUrl: 'https://www.greendeckafrica.netlify.app',
-    repoUrl: '#',
-    longDescription: 'Designed and developed the official website for GreenDeck Africa. The platform serves as a digital hub for showcasing environmental initiatives and sustainable solutions. Key features include a responsive layout, interactive project galleries, and an optimized user interface for seamless navigation. The site was built with performance and accessibility in mind, ensuring a broad reach across different devices and user demographics.',
-    detailImages: ['https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-  },
-  {
-    title: 'Bigg Manuel Portfolio',
-    category: 'UI/UX Design',
-    description: 'A dynamic personal portfolio and brand website created for Bigg Manuel, featuring a custom design system and smooth interactions.',
-    imageUrl: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=2055&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    tags: ['React', 'UI/UX', 'Animation'],
-    liveUrl: 'https://www.biggmanuel.netlify.app',
-    repoUrl: '#',
-    longDescription: 'Crafted a unique digital identity for Bigg Manuel through a custom-built portfolio website. This project emphasized visual storytelling and brand consistency. The site features a modern aesthetic, smooth scrolling animations, and a showcase of creative works. It was engineered to be fast, SEO-friendly, and easily maintainable, serving as a professional touchpoint for clients and partners.',
-    detailImages: ['https://images.unsplash.com/photo-1517292987719-0369a794ec0f?q=80&w=1974&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-  },
-  {
-    title: 'Brand Identity & Logo Design',
-    category: 'Graphic Design',
-    description: 'Developed a complete brand identity package for a startup, including logo, color palette, and typography guidelines to ensure brand consistency.',
-    imageUrl: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=2071&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    tags: ['Adobe Illustrator', 'Branding', 'Logo Design'],
-    repoUrl: '#',
-    longDescription: 'The challenge was to create a memorable and scalable brand identity for a tech startup needing to stand out in a crowded market. My process began with a deep-dive discovery session with the stakeholders, followed by extensive market research and competitor analysis. I developed several logo concepts, iterating based on feedback to arrive at a final design that perfectly captured the company\'s innovative spirit. The final delivery included a comprehensive brand style guide with logo variations, a defined color palette, typography rules, and mockups, ensuring a cohesive and powerful brand presence across all digital and print channels.',
-    detailImages: ['https://images.unsplash.com/photo-1600692925375-9b854378565a?q=80&w=1974&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-  },
-  {
-    title: 'E-commerce App UI/UX',
-    category: 'UI/UX Design',
-    description: 'Designed an intuitive and user-friendly interface for a mobile e-commerce application, focusing on a seamless checkout process and user engagement.',
-    imageUrl: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?q=80&w=2070&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    tags: ['Figma', 'User Research', 'Prototyping'],
-    liveUrl: '#',
-    repoUrl: '#',
-    longDescription: 'The primary goal was to tackle high cart abandonment rates by designing a frictionless shopping experience. The process started with comprehensive user research, including surveys and interviews, to create detailed user personas and journey maps. This helped identify key pain points in existing e-commerce flows. Using Figma, I created low-fidelity wireframes, which evolved into high-fidelity, interactive prototypes. These prototypes underwent several rounds of usability testing, with feedback directly informing design iterations. The final design features a clean interface, intuitive navigation, and a streamlined, multi-step checkout process that simplifies purchasing and builds user trust.',
-    detailImages: ['https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-  },
-  {
-    title: 'Personal Portfolio Website',
-    category: 'Frontend Development',
-    description: 'Built a responsive personal portfolio website from scratch using modern web technologies to showcase my skills and projects.',
-    imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    tags: ['React', 'TypeScript', 'Tailwind CSS'],
-    liveUrl: '#',
-    repoUrl: '#',
-    longDescription: 'This project—the very website you are viewing—was a personal initiative to create a performant and aesthetically pleasing platform to showcase my work. The goal was to build a fast, fully responsive, and easily maintainable site. I chose a modern frontend stack: React for its component-based architecture, TypeScript for robust type safety and improved developer experience, and Tailwind CSS for rapid, utility-first styling. The site features smooth, subtle animations to enhance user experience, a carefully considered layout for all device sizes, and is optimized for search engines and fast load times. The code is clean, well-documented, and follows industry best practices.',
-    detailImages: ['https://images.unsplash.com/photo-1542744095-291d1f67b221?q=80&w=2070&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-  },
-  {
-    title: 'Event Banners and Flyers',
-    category: 'Graphic Design',
-    description: 'Created visually compelling marketing materials, including banners and flyers, for various corporate events and campaigns, leading to increased attendance.',
-    imageUrl: 'https://images.unsplash.com/photo-1579265503929-4b68a9010530?q=80&w=2070&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    tags: ['Adobe Photoshop', 'Print Design'],
-    longDescription: 'For this project, I was tasked with creating a full suite of marketing materials for a major tech conference. The objective was to create a cohesive and exciting visual theme that would generate buzz and drive registrations. Working closely with the event organizers, I designed everything from large-format banners and stage backdrops to digital flyers and social media graphics. The designs maintained brand consistency while injecting a dynamic and modern feel, resulting in a strong visual impact that significantly contributed to a 25% increase in event registrations compared to the previous year.',
-    detailImages: ['https://images.unsplash.com/photo-1549998394-156f7a421526?q=80&w=1964&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-  },
-  {
-    title: 'Mobile Banking App Concept',
-    category: 'UI/UX Design',
-    description: 'A concept design for a mobile banking app focused on simplicity and security, featuring biometric login and easy transaction tracking.',
-    imageUrl: 'https://images.unsplash.com/photo-1580974928064-75ae6a5293c0?q=80&w=1964&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    tags: ['Figma', 'UX', 'Mobile Design'],
-    liveUrl: '#',
-    longDescription: 'This conceptual project aimed to reimagine the mobile banking experience, addressing common user frustrations like cluttered interfaces and complex navigation. The core focus was on creating a design that feels simple, secure, and empowering for the user. Key features include a clean dashboard for an at-a-glance financial overview, intuitive flows for common tasks like transfers and payments, and robust security measures like biometric authentication. The high-fidelity prototype, built in Figma, was tested with potential users to validate design choices, ensuring the concept delivered a genuinely frictionless and trustworthy user experience.',
-    detailImages: ['https://images.unsplash.com/photo-1601610932379-22a705b02b5e?q=80&w=1964&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-  },
-  {
-    title: 'Weather App with React',
-    category: 'Frontend Development',
-    description: 'A clean and simple weather application built with React that fetches data from a third-party API to display current weather conditions.',
-    imageUrl: 'https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?q=80&w=1965&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    tags: ['React', 'API Integration', 'CSS'],
-    liveUrl: '#',
-    repoUrl: '#',
-    longDescription: 'This project was built to demonstrate proficiency in fetching and handling data from a third-party API within a React application. The app allows users to search for a city and view its current weather conditions. I utilized React hooks (`useState` and `useEffect`) for state management and to handle the asynchronous API call to the OpenWeatherMap API. The UI is designed to be clean, responsive, and easy to interpret, with dynamic icons that change based on the weather. This project serves as a practical example of consuming REST APIs and conditionally rendering components based on the fetched data in a modern frontend application.',
-    detailImages: ['https://images.unsplash.com/photo-1601134467661-3d775b999c8b?q=80&w=1975&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+    longDescription: 'Designed and developed the official website for GreenDeck Africa. The platform serves as a digital hub for showcasing environmental initiatives. Key features include a responsive layout, interactive project galleries, and an optimized user interface for seamless navigation.',
+    detailImages: ['https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop']
   }
 ];
 

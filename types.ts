@@ -15,6 +15,7 @@ export interface TimelineItem {
 }
 
 export interface Project {
+  id: string; // Added for Admin Management
   title: string;
   category: string;
   description: string;

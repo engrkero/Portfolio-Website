@@ -1,200 +1,95 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+
+import React from 'react';
 import Section from './Section';
 import AnimatedSection from './AnimatedSection';
-import { PROJECTS } from '../constants';
-import type { Project } from '../types';
-import { GithubIcon, LinkIcon } from './icons';
-import ProjectModal from './ProjectModal';
-
-const ProjectCard3D: React.FC<{ project: Project; onCardClick: (project: Project) => void; }> = ({ project, onCardClick }) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [rotation, setRotation] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
-  const frameRef = useRef<number>(0);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    
-    cancelAnimationFrame(frameRef.current);
-
-    const { clientX, clientY } = e;
-    const rect = cardRef.current.getBoundingClientRect();
-    
-    frameRef.current = requestAnimationFrame(() => {
-        const x = clientX - rect.left;
-        const y = clientY - rect.top;
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-
-        // Calculate rotation based on mouse position (max 8 degrees)
-        const rotateX = ((y - centerY) / centerY) * -8;
-        const rotateY = ((x - centerX) / centerX) * 8;
-
-        setRotation({ x: rotateX, y: rotateY });
-    });
-  };
-
-  const handleMouseEnter = () => setIsHovering(true);
-  
-  const handleMouseLeave = () => {
-    cancelAnimationFrame(frameRef.current);
-    setIsHovering(false);
-    setRotation({ x: 0, y: 0 });
-  };
-  
-  // Cleanup
-  useEffect(() => {
-      return () => cancelAnimationFrame(frameRef.current);
-  }, []);
-
-  return (
-    <div 
-        className="perspective-1000 h-full"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onMouseMove={handleMouseMove}
-        onClick={() => onCardClick(project)}
-    >
-        <div 
-            ref={cardRef}
-            className="relative h-full bg-white rounded-2xl transition-all duration-100 ease-out preserve-3d cursor-pointer border border-gray-100 will-change-transform"
-            style={{
-                transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale(${isHovering ? 1.02 : 1})`,
-                boxShadow: isHovering 
-                    ? '0 20px 40px -10px rgba(42, 50, 75, 0.2)' 
-                    : '0 10px 20px -10px rgba(0,0,0,0.1)'
-            }}
-            role="button"
-            tabIndex={0}
-        >
-            {/* Image floating "above" card */}
-            <div 
-                className="h-56 w-full overflow-hidden rounded-t-2xl bg-gray-100 relative"
-                style={{ transform: 'translateZ(20px)' }}
-            >
-                <img 
-                    src={project.imageUrl} 
-                    alt={project.title} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    loading="lazy"
-                />
-                <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-300 ${isHovering ? 'opacity-100' : 'opacity-0'}`}>
-                    <span className="text-white font-bold text-lg px-4 py-2 border-2 border-white rounded-full transform translate-y-4 transition-transform duration-300"
-                          style={{ transform: isHovering ? 'translateY(0) translateZ(30px)' : 'translateY(10px)' }}>
-                        View Project
-                    </span>
-                </div>
-            </div>
-
-            {/* Content */}
-            <div className="p-6 flex flex-col flex-grow" style={{ transform: 'translateZ(10px)' }}>
-                <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-bold text-[#2A324B]">{project.title}</h3>
-                    <span className="text-xs font-bold text-[#F0544F] bg-[#F0544F]/10 px-2 py-1 rounded-md">{project.category}</span>
-                </div>
-                <p className="text-gray-600 mb-4 flex-grow text-sm leading-relaxed">{project.description}</p>
-                
-                <div className="flex flex-wrap gap-2 mb-4">
-                    {project.tags.slice(0, 3).map(tag => (
-                    <span key={tag} className="bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-0.5 rounded-full border border-gray-200">
-                        {tag}
-                    </span>
-                    ))}
-                </div>
-
-                <div className="pt-4 border-t border-gray-100 flex items-center justify-end space-x-4">
-                    {project.liveUrl && (
-                        <span className="text-gray-400 hover:text-[#F0544F] transition-colors">
-                             <LinkIcon />
-                        </span>
-                    )}
-                    {project.repoUrl && (
-                        <span className="text-gray-400 hover:text-[#2A324B] transition-colors">
-                             <GithubIcon />
-                        </span>
-                    )}
-                </div>
-            </div>
-        </div>
-    </div>
-  );
-};
-
-const ProjectCardSkeleton: React.FC = () => (
-  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col animate-pulse h-[400px]">
-    <div className="w-full h-56 bg-gray-200"></div>
-    <div className="p-6 flex flex-col flex-grow">
-      <div className="h-6 w-3/4 bg-gray-200 rounded mb-3"></div>
-      <div className="h-4 w-full bg-gray-200 rounded mb-2"></div>
-      <div className="h-4 w-5/6 bg-gray-200 rounded mb-4"></div>
-    </div>
-  </div>
-);
-
+import { GithubIcon } from './icons';
 
 const Portfolio: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [displayProjects, setDisplayProjects] = useState<Project[]>([]);
-
-  const categories = useMemo(() => ['All', ...new Set(PROJECTS.map(p => p.category))], []);
-
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      const filtered = activeCategory === 'All' 
-        ? PROJECTS 
-        : PROJECTS.filter(p => p.category === activeCategory);
-      setDisplayProjects(filtered);
-      setIsLoading(false);
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [activeCategory]);
-
   return (
-    <>
-      <Section id="portfolio" title="My Work">
-        <AnimatedSection>
-          <div className="flex justify-center flex-wrap gap-2 md:gap-4 mb-12">
-            {categories.map(category => (
-              <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`px-6 py-2 text-sm md:text-base font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none ${
-                  activeCategory === category
-                    ? 'bg-[#2A324B] text-white shadow-lg shadow-[#2A324B]/30'
-                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-        </AnimatedSection>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto px-2">
-          {isLoading ? (
-            Array.from({ length: 4 }).map((_, index) => <ProjectCardSkeleton key={index} />)
-          ) : displayProjects.length > 0 ? (
-            displayProjects.map((project, index) => (
-              <AnimatedSection key={`${activeCategory}-${project.title}`} delay={index * 100}>
-                <ProjectCard3D project={project} onCardClick={setSelectedProject} />
-              </AnimatedSection>
-            ))
-          ) : (
-             <div className="md:col-span-2 text-center py-12">
-                <h3 className="text-2xl font-bold text-gray-700 mb-2">No Projects Found</h3>
-            </div>
-          )}
-        </div>
-      </Section>
+    <Section id="portfolio" title="My Work" className="bg-white relative overflow-hidden">
+      {/* Background Tech Grid */}
+      <div className="absolute inset-0 opacity-5 pointer-events-none">
+         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_#2A324B_1px,_transparent_1px)] bg-[size:24px_24px]"></div>
+      </div>
 
-      {selectedProject && (
-        <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />
-      )}
-    </>
+      <AnimatedSection>
+        <div className="flex flex-col items-center justify-center py-20 relative z-10">
+            {/* Context Text */}
+            <div className="max-w-2xl text-center mb-16 space-y-4">
+                <p className="text-xl md:text-2xl text-gray-700 font-light">
+                    My projects live where code meets creativity.
+                </p>
+                <p className="text-sm md:text-base text-gray-500">
+                    Explore the source code, open-source contributions, and live technical deployments directly on my GitHub repository.
+                </p>
+            </div>
+
+            {/* The Web3 Button */}
+            <a 
+                href="https://github.com/engrkero" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="group relative inline-flex items-center justify-center scale-100 hover:scale-105 transition-transform duration-500"
+            >
+                {/* 1. Animated Gradient Ring Blur */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-[#2A324B] via-[#F0544F] to-[#F8B462] rounded-full opacity-60 group-hover:opacity-100 blur-lg transition-opacity duration-500 animate-spin-slow"></div>
+                
+                {/* 2. Sharp Gradient Border */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#2A324B] via-[#F0544F] to-[#F8B462] rounded-full p-[2px] animate-gradient-xy">
+                    <div className="h-full w-full bg-white rounded-full"></div>
+                </div>
+                
+                {/* 3. Button Content */}
+                <div className="relative flex items-center gap-6 bg-white text-[#2A324B] px-12 py-6 rounded-full leading-none overflow-hidden">
+                    
+                    {/* Hover Fill Effect */}
+                    <div className="absolute inset-0 bg-gray-50 transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-500 ease-out"></div>
+                    
+                    {/* Icon */}
+                    <span className="relative z-10 flex items-center justify-center w-12 h-12 bg-[#2A324B] text-white rounded-full shadow-lg group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+                        <GithubIcon />
+                    </span>
+                    
+                    {/* Text */}
+                    <div className="relative z-10 flex flex-col items-start">
+                        <span className="font-bold text-2xl tracking-tight group-hover:text-[#F0544F] transition-colors">
+                            Access Repository
+                        </span>
+                        <span className="text-xs font-mono text-gray-400 uppercase tracking-widest group-hover:text-[#F8B462] transition-colors">
+                            // view_source_code
+                        </span>
+                    </div>
+                    
+                    {/* Arrow */}
+                    <div className="relative z-10 pl-4 border-l border-gray-100">
+                         <svg className="w-6 h-6 text-gray-400 transform group-hover:translate-x-2 group-hover:text-[#2A324B] transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </div>
+                </div>
+            </a>
+            
+            {/* Decorative Connection Line */}
+            <div className="absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gray-200 to-transparent -z-10"></div>
+        </div>
+      </AnimatedSection>
+
+      <style>{`
+        @keyframes gradient-xy {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .animate-gradient-xy {
+            background-size: 200% 200%;
+            animation: gradient-xy 3s ease infinite;
+        }
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spin-slow 8s linear infinite;
+        }
+      `}</style>
+    </Section>
   );
 };
 
