@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export interface Skill {
@@ -23,4 +24,21 @@ export interface Project {
   repoUrl?: string;
   longDescription?: string;
   detailImages?: string[];
+}
+
+export interface Achievement {
+    title: string;
+    count: string;
+    icon: React.ReactElement;
+    delay: number;
+}
+
+export interface Testimonial {
+    id: string;
+    name: string;
+    role: string;
+    company: string;
+    quote: string;
+    avatarUrl: string;
+    date?: string;
 }

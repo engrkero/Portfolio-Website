@@ -46,14 +46,21 @@ const Header: React.FC = () => {
     { href: '#skills', label: 'Skills' },
     { href: '#experience', label: 'Experience' },
     { href: '#portfolio', label: 'Portfolio' },
+    { href: '#achievements', label: 'Achievements' },
     { href: '#education', label: 'Education' },
     { href: '#contact', label: 'Contact' },
   ];
 
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled || isMenuOpen ? 'bg-white/95 shadow-lg backdrop-blur-md' : 'bg-transparent'}`}>
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+      <header 
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
+          isScrolled || isMenuOpen 
+            ? 'bg-white/95 shadow-lg backdrop-blur-md py-2' 
+            : 'bg-transparent py-4'
+        }`}
+      >
+        <div className="container mx-auto px-6 flex justify-between items-center">
           <a href="#home" onClick={handleSmoothScroll} className="text-3xl font-extrabold tracking-tighter z-50">
             <span className="text-[#2A324B]">K</span>
             <span className="text-[#F0544F]">G</span>
