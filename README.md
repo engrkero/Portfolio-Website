@@ -11,28 +11,22 @@ This is a personal portfolio website for Keren Godwin Onen, built with React, Ty
 -   Project showcase, skills, experience, and education sections
 -   Functional contact form with real-time validation
 
-## EmailJS Configuration (Contact Form)
+## EmailJS Configuration (IMPORTANT)
 
-To make the contact form functional, you need to configure it with your own EmailJS account credentials.
+For the contact form to work correctly (sending you a notification AND sending the client an auto-reply), please configure your EmailJS dashboard exactly as follows:
 
-1.  **Create an EmailJS Account**:
-    *   Sign up for a free account at [https://www.emailjs.com/](https://www.emailjs.com/).
-    *   **Add a Service**: Connect your email provider (Gmail, Outlook, etc.) in the "Email Services" tab. Copy your **Service ID**.
-
-2.  **Update Your Code**:
-    *   Open `components/ContactForm.tsx`.
-    *   Update `service_id`, `template_id` (for both templates below), and `user_id` (Public Key) with your credentials.
+### 1. Account Setup
+*   **Service ID**: `service_q739y9g`
+*   **Public Key**: `VafLS1D-6suQGIkES`
 
 ---
 
-### Template 1: Contact Notification (For YOU)
-**This is the email YOU receive when a client sends a message.**
-
-1.  Go to "Email Templates" and create a **New Template**.
-2.  **Settings**:
-    *   **Name**: Admin Notification
-    *   **Subject**: `New Message from {{name}}: {{subject}}`
-3.  **Content**: Click on "Source Code" (or the `< >` icon) in the editor and paste the HTML below.
+### 2. Template 1: Admin Notification (Contact Us)
+**ID**: `template_89tgujo`
+*   **To Email**: Your personal email address (e.g., kgsc.unical@gmail.com).
+*   **From Name**: `{{name}}`
+*   **Subject**: `New Message from {{name}}: {{subject}}`
+*   **Content (HTML)**:
 
 ```html
 <!DOCTYPE html>
@@ -103,15 +97,14 @@ To make the contact form functional, you need to configure it with your own Emai
 
 ---
 
-### Template 2: Auto-Reply (For CLIENT)
-**This is the email the CLIENT receives automatically after contacting you.**
+### 3. Template 2: Auto-Reply (Client Feedback)
+**ID**: `template_w6fbo4n`
 
-1.  Go to "Email Templates" and create a **Second Template**.
-2.  **Settings**:
-    *   **Name**: Client Auto-Reply
-    *   **Subject**: `Re: {{subject}} - Received`
-    *   **To Email**: `{{_replyto}}` (Important: This sends it back to the sender).
-3.  **Content**: Click on "Source Code" (or the `< >` icon) and paste the HTML below.
+**CRITICAL SETTING**:
+*   **To Email**: `{{to_email}}` 
+    *(If that doesn't work, try `{{_replyto}}`. The code sends both, but your dashboard must match one of them).*
+*   **Subject**: `Re: {{subject}} - Received`
+*   **Content (HTML)**:
 
 ```html
 <!DOCTYPE html>

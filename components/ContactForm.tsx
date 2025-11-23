@@ -87,28 +87,47 @@ const ContactForm: React.FC = () => {
 
     setFormState({ status: 'SUBMITTING', message: '' });
     
-    // 1. Send Notification to Owner
+    // Credentials
+    const SERVICE_ID = 'service_q739y9g';
+    const PUBLIC_KEY = 'VafLS1D-6suQGIkES';
+    const CONTACT_TEMPLATE_ID = 'template_89tgujo'; // Admin Notification
+    const AUTOREPLY_TEMPLATE_ID = 'template_w6fbo4n'; // Client Feedback
+
+    // 1. Send Notification to Owner (KGSC)
+    // This sends the email to the address configured in the EmailJS Dashboard for this service
     const notificationData = {
-      service_id: 'service_q739y9g',
-      template_id: 'template_89tgujo',
-      user_id: 'VafLS1D-6suQGIkES',
-      template_params: formData,
+      service_id: SERVICE_ID,
+      template_id: CONTACT_TEMPLATE_ID,
+      user_id: PUBLIC_KEY,
+      template_params: {
+        name: formData.name,
+        _replyto: formData._replyto, // Allows Owner to reply to Sender
+        subject: formData.subject,
+        message: formData.message,
+      },
     };
 
-    // 2. Send Auto-Reply to User
+    // 2. Send Auto-Reply to User (Sender)
+    // We pass the sender's email in multiple keys (to_email, user_email, _replyto)
+    // to ensure it matches whatever variable you used in the "To Email" field in EmailJS.
     const autoReplyData = {
-      service_id: 'service_q739y9g',
-      template_id: 'template_w6fbo4n',
-      user_id: 'VafLS1D-6suQGIkES',
+      service_id: SERVICE_ID,
+      template_id: AUTOREPLY_TEMPLATE_ID,
+      user_id: PUBLIC_KEY,
       template_params: {
-        ...formData,
-        // Ensure the template uses 'to_email' or '_replyto' in the "To Email" field settings in dashboard
-        to_name: formData.name, 
+        name: formData.name,
+        to_name: formData.name,
+        subject: formData.subject,
+        message: formData.message,
+        // Redundancy to ensure delivery to client
+        _replyto: formData._replyto, 
+        to_email: formData._replyto,
+        user_email: formData._replyto
       },
     };
 
     try {
-      // Send the main notification first
+      // Step 1: Send the notification to YOU (KGSC)
       const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -116,13 +135,17 @@ const ContactForm: React.FC = () => {
       });
 
       if (response.ok) {
-        // If notification successful, attempt to send auto-reply
-        // We don't await this to keep UI responsive, or we catch errors silently
+        // Step 2: If successful, send the Auto-Reply to the CLIENT
+        // We don't await this strictly to keep the UI snappy, but we log errors
         fetch('https://api.emailjs.com/api/v1.0/email/send', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(autoReplyData),
-        }).catch(err => console.error('Auto-reply failed to send:', err));
+        })
+        .then(res => {
+            if (!res.ok) console.warn('Auto-reply might have failed.', res.status);
+        })
+        .catch(err => console.error('Auto-reply network error:', err));
 
         setFormState({ status: 'SUCCESS', message: "Thanks for your message! I'll get back to you soon." });
         setFormData({ name: '', _replyto: '', subject: '', message: '' });
@@ -131,6 +154,7 @@ const ContactForm: React.FC = () => {
         throw new Error('Failed to send email.');
       }
     } catch (error) {
+      console.error('EmailJS Error:', error);
       setFormState({ status: 'ERROR', message: 'Something went wrong. Please try again.' });
     }
   };
