@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { SendIcon, SpinnerIcon } from './icons';
 
@@ -94,22 +95,19 @@ const ContactForm: React.FC = () => {
     const AUTOREPLY_TEMPLATE_ID = 'template_w6fbo4n'; // Client Feedback
 
     // 1. Send Notification to Owner (KGSC)
-    // This sends the email to the address configured in the EmailJS Dashboard for this service
     const notificationData = {
       service_id: SERVICE_ID,
       template_id: CONTACT_TEMPLATE_ID,
       user_id: PUBLIC_KEY,
       template_params: {
         name: formData.name,
-        _replyto: formData._replyto, // Allows Owner to reply to Sender
+        _replyto: formData._replyto, 
         subject: formData.subject,
         message: formData.message,
       },
     };
 
     // 2. Send Auto-Reply to User (Sender)
-    // We pass the sender's email in multiple keys (to_email, user_email, _replyto)
-    // to ensure it matches whatever variable you used in the "To Email" field in EmailJS.
     const autoReplyData = {
       service_id: SERVICE_ID,
       template_id: AUTOREPLY_TEMPLATE_ID,
@@ -119,7 +117,6 @@ const ContactForm: React.FC = () => {
         to_name: formData.name,
         subject: formData.subject,
         message: formData.message,
-        // Redundancy to ensure delivery to client
         _replyto: formData._replyto, 
         to_email: formData._replyto,
         user_email: formData._replyto
@@ -127,7 +124,6 @@ const ContactForm: React.FC = () => {
     };
 
     try {
-      // Step 1: Send the notification to YOU (KGSC)
       const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -135,8 +131,6 @@ const ContactForm: React.FC = () => {
       });
 
       if (response.ok) {
-        // Step 2: If successful, send the Auto-Reply to the CLIENT
-        // We don't await this strictly to keep the UI snappy, but we log errors
         fetch('https://api.emailjs.com/api/v1.0/email/send', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -147,7 +141,7 @@ const ContactForm: React.FC = () => {
         })
         .catch(err => console.error('Auto-reply network error:', err));
 
-        setFormState({ status: 'SUCCESS', message: "Thanks for your message! I'll get back to you soon." });
+        setFormState({ status: 'SUCCESS', message: "Message Received! We'll be in touch." });
         setFormData({ name: '', _replyto: '', subject: '', message: '' });
         setTouched({});
       } else {
@@ -161,17 +155,35 @@ const ContactForm: React.FC = () => {
 
   if (formState.status === 'SUCCESS') {
     return (
-      <div className="w-full p-8 bg-white rounded-lg shadow-xl text-center">
-        <h3 className="text-2xl font-bold text-green-600 mb-4">Message Sent!</h3>
-        <p className="text-gray-600">{formState.message}</p>
-        <p className="text-sm text-gray-400 mt-2">Check your email for a confirmation.</p>
+      <div className="w-full p-12 bg-white rounded-2xl shadow-xl text-center animate-scale-in">
+        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+             <svg className="w-10 h-10 text-green-500 animate-[checkmark_0.5s_ease-out_forwards]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" style={{ strokeDasharray: 24, strokeDashoffset: 24, animation: 'dash 0.5s 0.2s ease-out forwards' }} />
+             </svg>
+        </div>
+        <h3 className="text-2xl font-bold text-[#2A324B] mb-2">Message Sent Successfully!</h3>
+        <p className="text-gray-500 mb-6">{formState.message}</p>
+        <button 
+            onClick={() => setFormState({ status: 'IDLE', message: '' })}
+            className="px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+        >
+            Send Another
+        </button>
+        <style>{`
+            @keyframes dash { to { stroke-dashoffset: 0; } }
+            @keyframes scale-in { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+            .animate-scale-in { animation: scale-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        `}</style>
       </div>
     );
   }
 
   return (
-    <div className="w-full p-8 bg-white rounded-lg shadow-xl text-left">
-      <form noValidate onSubmit={handleSubmit}>
+    <div className="w-full p-8 md:p-10 bg-white rounded-2xl shadow-2xl text-left border border-gray-100 relative overflow-hidden group">
+      {/* Decorative background element */}
+      <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-[#F0544F]/5 to-transparent rounded-bl-full pointer-events-none transition-transform duration-700 group-hover:scale-110"></div>
+
+      <form noValidate onSubmit={handleSubmit} className="relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8 mb-6">
           <div className="relative">
             <input
@@ -182,19 +194,19 @@ const ContactForm: React.FC = () => {
               value={formData.name}
               onChange={handleChange}
               onBlur={handleBlur}
-              className={`peer w-full px-4 py-3 bg-gray-100 border-2 rounded-lg text-gray-800 placeholder-transparent focus:outline-none transition ${
-                touched.name && errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#F0544F]'
+              className={`peer w-full px-5 py-4 bg-gray-50 border-2 rounded-xl text-gray-800 placeholder-transparent focus:outline-none focus:bg-white transition-all duration-300 transform focus:scale-[1.02] focus:shadow-lg ${
+                touched.name && errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-100 focus:border-[#F0544F]'
               }`}
               placeholder="Full Name"
               aria-invalid={touched.name && !!errors.name}
               aria-describedby={touched.name && errors.name ? "name-error" : undefined}
             />
-            <label htmlFor="name" className={`absolute left-4 -top-3.5 text-sm bg-white px-1 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-3.5 peer-focus:-top-3.5 peer-focus:text-sm ${
+            <label htmlFor="name" className={`absolute left-4 -top-3.5 text-sm bg-white px-2 rounded-full transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-4 peer-placeholder-shown:bg-transparent peer-focus:-top-3.5 peer-focus:text-sm peer-focus:bg-white ${
               touched.name && errors.name ? 'text-red-500 peer-focus:text-red-500' : 'text-gray-500 peer-focus:text-[#F0544F]'
             }`}>
               Full Name
             </label>
-            {touched.name && errors.name && <p id="name-error" className="text-red-500 text-xs mt-1 absolute">{errors.name}</p>}
+            {touched.name && errors.name && <p id="name-error" className="text-red-500 text-xs mt-1 absolute pl-2 animate-fade-in">{errors.name}</p>}
           </div>
           <div className="relative">
             <input
@@ -205,19 +217,19 @@ const ContactForm: React.FC = () => {
               value={formData._replyto}
               onChange={handleChange}
               onBlur={handleBlur}
-              className={`peer w-full px-4 py-3 bg-gray-100 border-2 rounded-lg text-gray-800 placeholder-transparent focus:outline-none transition ${
-                touched._replyto && errors._replyto ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#F0544F]'
+              className={`peer w-full px-5 py-4 bg-gray-50 border-2 rounded-xl text-gray-800 placeholder-transparent focus:outline-none focus:bg-white transition-all duration-300 transform focus:scale-[1.02] focus:shadow-lg ${
+                touched._replyto && errors._replyto ? 'border-red-500 focus:border-red-500' : 'border-gray-100 focus:border-[#F0544F]'
               }`}
               placeholder="Email Address"
               aria-invalid={touched._replyto && !!errors._replyto}
               aria-describedby={touched._replyto && errors._replyto ? "email-error" : undefined}
             />
-             <label htmlFor="email" className={`absolute left-4 -top-3.5 text-sm bg-white px-1 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-3.5 peer-focus:-top-3.5 peer-focus:text-sm ${
+             <label htmlFor="email" className={`absolute left-4 -top-3.5 text-sm bg-white px-2 rounded-full transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-4 peer-placeholder-shown:bg-transparent peer-focus:-top-3.5 peer-focus:text-sm peer-focus:bg-white ${
               touched._replyto && errors._replyto ? 'text-red-500 peer-focus:text-red-500' : 'text-gray-500 peer-focus:text-[#F0544F]'
             }`}>
               Email Address
             </label>
-            {touched._replyto && errors._replyto && <p id="email-error" className="text-red-500 text-xs mt-1 absolute">{errors._replyto}</p>}
+            {touched._replyto && errors._replyto && <p id="email-error" className="text-red-500 text-xs mt-1 absolute pl-2 animate-fade-in">{errors._replyto}</p>}
           </div>
         </div>
         <div className="relative mb-8">
@@ -229,19 +241,19 @@ const ContactForm: React.FC = () => {
             value={formData.subject}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={`peer w-full px-4 py-3 bg-gray-100 border-2 rounded-lg text-gray-800 placeholder-transparent focus:outline-none transition ${
-              touched.subject && errors.subject ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#F0544F]'
+            className={`peer w-full px-5 py-4 bg-gray-50 border-2 rounded-xl text-gray-800 placeholder-transparent focus:outline-none focus:bg-white transition-all duration-300 transform focus:scale-[1.02] focus:shadow-lg ${
+              touched.subject && errors.subject ? 'border-red-500 focus:border-red-500' : 'border-gray-100 focus:border-[#F0544F]'
             }`}
             placeholder="Subject"
             aria-invalid={touched.subject && !!errors.subject}
             aria-describedby={touched.subject && errors.subject ? "subject-error" : undefined}
           />
-          <label htmlFor="subject" className={`absolute left-4 -top-3.5 text-sm bg-white px-1 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-3.5 peer-focus:-top-3.5 peer-focus:text-sm ${
+          <label htmlFor="subject" className={`absolute left-4 -top-3.5 text-sm bg-white px-2 rounded-full transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-4 peer-placeholder-shown:bg-transparent peer-focus:-top-3.5 peer-focus:text-sm peer-focus:bg-white ${
             touched.subject && errors.subject ? 'text-red-500 peer-focus:text-red-500' : 'text-gray-500 peer-focus:text-[#F0544F]'
           }`}>
             Subject
           </label>
-          {touched.subject && errors.subject && <p id="subject-error" className="text-red-500 text-xs mt-1 absolute">{errors.subject}</p>}
+          {touched.subject && errors.subject && <p id="subject-error" className="text-red-500 text-xs mt-1 absolute pl-2 animate-fade-in">{errors.subject}</p>}
         </div>
         <div className="relative mb-8">
            <textarea
@@ -252,25 +264,25 @@ const ContactForm: React.FC = () => {
             value={formData.message}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={`peer w-full px-4 py-3 bg-gray-100 border-2 rounded-lg text-gray-800 placeholder-transparent focus:outline-none transition ${
-              touched.message && errors.message ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#F0544F]'
+            className={`peer w-full px-5 py-4 bg-gray-50 border-2 rounded-xl text-gray-800 placeholder-transparent focus:outline-none focus:bg-white transition-all duration-300 transform focus:scale-[1.02] focus:shadow-lg ${
+              touched.message && errors.message ? 'border-red-500 focus:border-red-500' : 'border-gray-100 focus:border-[#F0544F]'
             }`}
             placeholder="Your Message"
             aria-invalid={touched.message && !!errors.message}
             aria-describedby={touched.message && errors.message ? "message-error" : undefined}
           ></textarea>
-           <label htmlFor="message" className={`absolute left-4 -top-3.5 text-sm bg-white px-1 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-3.5 peer-focus:-top-3.5 peer-focus:text-sm ${
+           <label htmlFor="message" className={`absolute left-4 -top-3.5 text-sm bg-white px-2 rounded-full transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-4 peer-placeholder-shown:bg-transparent peer-focus:-top-3.5 peer-focus:text-sm peer-focus:bg-white ${
             touched.message && errors.message ? 'text-red-500 peer-focus:text-red-500' : 'text-gray-500 peer-focus:text-[#F0544F]'
           }`}>
             Message
           </label>
-          {touched.message && errors.message && <p id="message-error" className="text-red-500 text-xs mt-1 absolute">{errors.message}</p>}
+          {touched.message && errors.message && <p id="message-error" className="text-red-500 text-xs mt-1 absolute pl-2 animate-fade-in">{errors.message}</p>}
         </div>
         <div>
           <button
             type="submit"
             disabled={formState.status === 'SUBMITTING' || !isFormValid}
-            className="w-full flex items-center justify-center gap-2 px-10 py-3 bg-[#F0544F] text-white text-lg font-bold rounded-lg shadow-lg hover:bg-opacity-90 transform hover:-translate-y-1 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#F0544F] disabled:bg-opacity-50 disabled:cursor-not-allowed disabled:hover:-translate-y-0"
+            className="w-full flex items-center justify-center gap-2 px-10 py-4 bg-[#F0544F] text-white text-lg font-bold rounded-xl shadow-lg shadow-red-200 hover:bg-[#d64642] transform hover:-translate-y-1 hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#F0544F]/30 disabled:bg-gray-300 disabled:shadow-none disabled:cursor-not-allowed disabled:hover:translate-y-0"
           >
             {formState.status === 'SUBMITTING' ? (
                 <>
@@ -284,7 +296,7 @@ const ContactForm: React.FC = () => {
             )}
           </button>
         </div>
-        {formState.status === 'ERROR' && <p className="mt-4 text-center text-red-600">{formState.message}</p>}
+        {formState.status === 'ERROR' && <p className="mt-4 text-center text-red-600 animate-fade-in">{formState.message}</p>}
       </form>
     </div>
   );
