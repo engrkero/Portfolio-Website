@@ -162,7 +162,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 
 export const SOCIAL_LINKS = [
     { name: 'Github', url: 'https://github.com/engrkero', icon: React.createElement(GithubIcon) },
-    { name: 'Linkedin', url: '#', icon: React.createElement(LinkedinIcon) },
+    { name: 'Linkedin', url: 'https://www.linkedin.com/in/k-g-s-c', icon: React.createElement(LinkedinIcon) },
     { name: 'X (Twitter)', url: 'https://www.x.com/KerenOnen46019', icon: React.createElement(TwitterIcon) },
     { name: 'Facebook', url: 'https://www.facebook.com/keren.onen.92', icon: React.createElement(FacebookIcon) },
     { name: 'Instagram', url: '#', icon: React.createElement(InstagramIcon) },
