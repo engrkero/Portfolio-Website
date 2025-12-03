@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { Skill, TimelineItem, Achievement, Testimonial, Project } from './types';
 import { GithubIcon, LinkedinIcon, TwitterIcon, FacebookIcon, InstagramIcon, WhatsappIcon, ReactIcon, FigmaIcon, AdobeSuiteIcon, TailwindCssIcon, UiUxIcon, GraphicDesignIcon, CodeIcon, TypescriptIcon, BrainIcon, UsersIcon, ClockIcon, HeartIcon, SmileIcon, BriefcaseIcon, TrophyIcon, BlockchainIcon, GraduationCapIcon, IdCardIcon, ComputerIcon } from './components/icons';
@@ -18,6 +19,15 @@ export const UNICAL_LOCATION = {
 };
 
 export const LATEST_UPDATES = [
+  {
+    id: 'pg_adm_2025',
+    title: 'College Of Postgraduate Studies | Quick Updates',
+    status: 'JUST IN',
+    description: '2024/2025 ADMISSION LIST IS OUT!:\nCandidate should click Admission Menu and Select Check Admission Status and input their Form Number to check their Admission Status and Print Admission Letter.',
+    urgent: true,
+    actionLabel: 'Check Admission Status',
+    actionUrl: 'https://unicalonline.edu.ng/admission-status/'
+  },
   {
     id: 'upd_1',
     title: 'Admission Still Ongoing',

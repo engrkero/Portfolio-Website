@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { UNICAL_LOCATION, LATEST_UPDATES } from '../constants';
 
@@ -85,7 +86,7 @@ const LocationAlert: React.FC = () => {
                 We detected you are around the University of Calabar. Here are the active registration statuses you should know about:
             </p>
             <div className="space-y-4">
-                {LATEST_UPDATES.map((update) => (
+                {LATEST_UPDATES.map((update: any) => (
                     <div key={update.id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all relative group">
                         <div className={`absolute top-0 left-0 w-1 h-full rounded-l-xl ${update.urgent ? 'bg-[#F0544F]' : 'bg-[#F8B462]'}`}></div>
                         
@@ -98,37 +99,55 @@ const LocationAlert: React.FC = () => {
                                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F0544F] opacity-40"></span>
                                           <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F0544F]"></span>
                                         </span>
-                                        Active
+                                        {update.status}
                                     </div>
                                 )}
                             </div>
                             <div className="text-[12px] text-gray-600 leading-relaxed whitespace-pre-line">
                                 {update.description}
                             </div>
+                            {update.actionUrl && (
+                                <a 
+                                    href={update.actionUrl} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="mt-3 inline-block px-4 py-2 bg-[#2A324B] text-white text-xs font-bold rounded-lg hover:bg-[#F0544F] transition-colors shadow-sm"
+                                >
+                                    {update.actionLabel || 'View Details'}
+                                </a>
+                            )}
                         </div>
                     </div>
                 ))}
             </div>
             
-            <div className="mt-6 pt-4 border-t border-gray-100 space-y-3">
+            <div className="mt-6 pt-4 border-t border-gray-100 space-y-2">
                 <a 
                     href="https://wa.me/+2349015183471?text=Hi,%20I%20am%20at%20Unical%20and%20need%20help%20with%20registration."
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block w-full py-3 px-4 bg-gradient-to-r from-[#2A324B] to-[#1a1f2e] text-white text-sm font-bold rounded-xl shadow-lg hover:shadow-xl transition-all text-center transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                 >
-                    <span>Start Registration Now</span>
+                    <span>Start General Registration</span>
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                 </a>
                 
-                <button 
-                    onClick={() => setShowModal(false)}
-                    className="w-full py-2 text-xs text-gray-400 hover:text-[#F0544F] transition-colors font-medium"
-                >
-                    Don't show again
-                </button>
+                <div className="flex gap-2">
+                    <button 
+                        onClick={() => setShowModal(false)}
+                        className="flex-1 py-2 text-xs text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors font-bold shadow-sm"
+                    >
+                        Close
+                    </button>
+                    <button 
+                        onClick={() => setShowModal(false)}
+                        className="flex-1 py-2 text-xs text-gray-400 hover:text-[#2A324B] bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors font-medium"
+                    >
+                        Don't show again
+                    </button>
+                </div>
             </div>
         </div>
       </div>
