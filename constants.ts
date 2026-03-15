@@ -20,48 +20,40 @@ export const UNICAL_LOCATION = {
 
 export const LATEST_UPDATES = [
   {
-    id: 'pg_adm_2025',
-    title: 'College Of Postgraduate Studies | Quick Updates',
-    status: 'JUST IN',
-    description: '2024/2025 ADMISSION LIST IS OUT!:\nCandidate should click Admission Menu and Select Check Admission Status and input their Form Number to check their Admission Status and Print Admission Letter.',
+    id: 'gss_venues',
+    title: 'GSS Exam Venues',
+    status: 'Check Now',
+    description: 'Click below to check your venues for GSS exams.',
     urgent: true,
-    actionLabel: 'Check Admission Status',
-    actionUrl: 'https://unicalonline.edu.ng/admission-status/'
+    actionLabel: 'Click here',
+    actionUrl: 'https://gss.myunical.net/exam-venue.php'
   },
   {
-    id: 'upd_1',
-    title: 'Admission Still Ongoing',
+    id: 'exam_portal',
+    title: 'Exam Portal',
     status: 'Active',
-    description: 'UNICAL Admission process is currently still ongoing. Check your admission status now.',
-    urgent: true
+    description: 'Visit the official UNICAL Exam Portal.',
+    urgent: true,
+    actionLabel: 'Click here',
+    actionUrl: 'https://www.unicalexams.edu.ng/'
   },
   {
-    id: 'upd_2',
-    title: 'Registration for Freshers',
-    status: 'Urgent',
-    description: '• JAMB Admission Letter Printing\n• Unical Checker Pin Purchase\n• Unical Admission Letter\n• Payment of Acceptance Fees\n• Online Screening (Requirements: JAMB Admission Letter, Birth Certificate, O\'Level Result, 2 Attestation Letters, Certificate of Origin, Passport)\n• Purchase of O\'Level Verification Pin\n• Payment of School Fees',
-    urgent: true
+    id: 'school_portal',
+    title: 'School Portal',
+    status: 'Login',
+    description: 'Visit the School Portal to access your account.',
+    urgent: true,
+    actionLabel: 'Click Here',
+    actionUrl: 'https://portal.unical.edu.ng/Identity/Account/Login?returnUrl=~%2F'
   },
   {
-    id: 'upd_3',
-    title: 'Course Registration',
-    status: 'Ongoing',
-    description: 'Course Registration is currently ongoing for all students.',
-    urgent: false
-  },
-  {
-    id: 'upd_4',
-    title: 'EDC & GSS Registrations',
-    status: 'Ongoing',
-    description: 'EDC & GSS Registrations are currently ongoing.',
-    urgent: false
-  },
-  {
-    id: 'upd_5',
-    title: 'NYSC Registration',
-    status: 'Part-Time',
-    description: 'NYSC Registration (Part-Time) is still ongoing.',
-    urgent: false
+    id: 'pg_portal',
+    title: 'PostGraduate Portal',
+    status: 'Login',
+    description: 'Visit the PostGraduate Portal.\n\nTip: If you don\'t know your password, try: 123, 321, your surname, first name, or middle name (all in CAPITAL LETTERS), or your phone number.',
+    urgent: true,
+    actionLabel: 'Click here',
+    actionUrl: 'https://unicalonline.edu.ng/login/'
   }
 ];
 
@@ -91,7 +83,7 @@ export const EXPERIENCE: TimelineItem[] = [
 
 export const EDUCATION: TimelineItem[] = [
   {
-    date: '2025 (Expected)',
+    date: '2025',
     title: 'HND, Computer Science',
     subtitle: 'Akanu Ibiam Federal Polytechnic, Unwana Afikpo, Ebonyi State',
     description: 'Higher National Diploma in Computer Science.'
