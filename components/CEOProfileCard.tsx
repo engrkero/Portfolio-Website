@@ -1,10 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { getSiteSettings } from '../firebaseDb';
+import { getSiteSettings, getLocalSettings } from '../firebaseDb';
 import type { SiteSettings } from '../types';
 
 const CEOProfileCard: React.FC = () => {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [settings, setSettings] = useState<SiteSettings>(getLocalSettings());
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [glowPosition, setGlowPosition] = useState({ x: 50, y: 50 });
   const [isHovered, setIsHovered] = useState(false);
@@ -50,14 +50,6 @@ const CEOProfileCard: React.FC = () => {
     setIsHovered(false);
     setRotation({ x: 0, y: 0 });
   };
-
-  if (!settings) {
-    return (
-      <div className="flex justify-center p-6">
-        <div className="w-10 h-10 border-4 border-[#F0544F] border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="py-16 bg-[#2A324B]/5 relative overflow-hidden border-b border-gray-200">

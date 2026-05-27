@@ -21,7 +21,25 @@ const rawConfig = {
 };
 
 // Check if credentials are valid to prevent app startup crash in public production deployments
-const isConfigValid = !!(rawConfig.apiKey && rawConfig.projectId && rawConfig.apiKey !== 'your_firebase_api_key_here');
+const isPlaceholder = (val?: string) => {
+  if (!val) return true;
+  const normalized = val.trim();
+  return [
+    'your_firebase_api_key_here',
+    'your_firebase_auth_domain_here',
+    'your_firebase_project_id_here',
+    'your_firebase_storage_bucket_here',
+    'your_firebase_messaging_sender_id_here',
+    'your_firebase_app_id_here'
+  ].includes(normalized);
+};
+
+export const isConfigValid = !!(
+  rawConfig.apiKey && 
+  rawConfig.projectId && 
+  !isPlaceholder(rawConfig.apiKey) && 
+  !isPlaceholder(rawConfig.projectId)
+);
 
 const firebaseConfig = isConfigValid ? rawConfig : {
   apiKey: "AIzaSyPlaceholderKeysToPreventCrashesOnPublicBuilds",
@@ -41,16 +59,4 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth();
 
-// Validate Connection to Firestore on initial boot
-async function testConnection() {
-  if (!isConfigValid) return;
-  try {
-    await getDocFromServer(doc(db, 'site_settings', 'active'));
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.error("Please check your Firebase configuration or network status.");
-    }
-  }
-}
-testConnection();
 

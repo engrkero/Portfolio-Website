@@ -137,9 +137,6 @@ const Footer: React.FC = () => {
             <div className="space-y-1">
                 <p className="font-medium text-gray-300">&copy; {new Date().getFullYear()} KERO GRAPHICS STUDIO CODE.</p>
                 <p className="text-xs">Designed & Developed with <span className="text-[#F0544F]">♥</span> in Calabar.</p>
-                <div className="pt-3 text-[10px] text-gray-500 hover:text-[#F0544F] transition-all font-mono tracking-wider">
-                  <a href="#admin">:: DATABASE COMMAND CONSOLE ::</a>
-                </div>
             </div>
         </div>
       </div>

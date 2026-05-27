@@ -1,9 +1,12 @@
 import React from 'react';
 
 export interface Skill {
+  id?: string;
   name: string;
   // FIX: Changed JSX.Element to React.ReactElement to avoid requiring the JSX namespace.
   icon?: React.ReactElement;
+  iconName?: string;
+  imageUrl?: string;
 }
 
 export interface TimelineItem {

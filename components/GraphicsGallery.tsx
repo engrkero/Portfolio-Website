@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { getGraphicsJobs } from '../firebaseDb';
+import { getGraphicsJobs, getLocalGraphicsJobs } from '../firebaseDb';
 import type { GraphicsJob } from '../types';
 
 const CATEGORIES = ['All', 'Flyer Design', 'Logo', 'Branding', 'Banner Design', 'Poster', 'Others'];
 
 const GraphicsGallery: React.FC = () => {
-  const [jobs, setJobs] = useState<GraphicsJob[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [jobs, setJobs] = useState<GraphicsJob[]>(getLocalGraphicsJobs());
+  const [loading, setLoading] = useState<boolean>(jobs.length === 0);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [activeJob, setActiveJob] = useState<GraphicsJob | null>(null);
 
