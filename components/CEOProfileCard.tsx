@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { getSiteSettings, getLocalSettings } from '../firebaseDb';
+import { subscribeSiteSettings, getLocalSettings } from '../firebaseDb';
 import type { SiteSettings } from '../types';
 
 const CEOProfileCard: React.FC = () => {
@@ -10,15 +10,10 @@ const CEOProfileCard: React.FC = () => {
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    async function fetchSettings() {
-      try {
-        const val = await getSiteSettings();
-        setSettings(val);
-      } catch (err) {
-        console.error("Error loading CEO details for profile card", err);
-      }
-    }
-    fetchSettings();
+    const unsubscribe = subscribeSiteSettings((val) => {
+      setSettings(val);
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {

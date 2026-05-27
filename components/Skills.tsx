@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Section from './Section';
 import AnimatedSection from './AnimatedSection';
-import { getSkills, getLocalSkills } from '../firebaseDb';
+import { subscribeSkills, getLocalSkills } from '../firebaseDb';
 import type { Skill } from '../types';
 import { 
   UiUxIcon, 
@@ -80,11 +80,12 @@ const Skills: React.FC = () => {
   const [skills, setSkills] = useState<Skill[]>(getLocalSkills());
 
   useEffect(() => {
-    getSkills().then(loaded => {
+    const unsubscribe = subscribeSkills((loaded) => {
       if (loaded && loaded.length > 0) {
         setSkills(loaded);
       }
     });
+    return () => unsubscribe();
   }, []);
 
   return (

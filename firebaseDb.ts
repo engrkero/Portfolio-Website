@@ -7,7 +7,8 @@ import {
   addDoc, 
   deleteDoc, 
   query, 
-  orderBy 
+  orderBy,
+  onSnapshot
 } from 'firebase/firestore';
 import { db, isConfigValid } from './firebase';
 import type { SiteSettings, GraphicsJob } from './types';
@@ -374,4 +375,84 @@ export async function deleteSkill(id: string): Promise<void> {
   } catch (err) {
     handleFirestoreError(err, OperationType.DELETE, docPath);
   }
+}
+
+/**
+ * Real-time subscription for site settings
+ */
+export function subscribeSiteSettings(callback: (settings: SiteSettings) => void): () => void {
+  if (!isConfigValid) {
+    callback(getLocalSettings());
+    return () => {};
+  }
+  const docRef = doc(db, 'site_settings', 'active');
+  return onSnapshot(docRef, (docSnap) => {
+    if (docSnap.exists()) {
+      const merged = { ...DEFAULT_SITE_SETTINGS, ...docSnap.data() };
+      saveLocalSettings(merged);
+      callback(merged);
+    } else {
+      callback(getLocalSettings());
+    }
+  }, (error) => {
+    handleFirestoreError(error, OperationType.GET, 'site_settings/active');
+  });
+}
+
+/**
+ * Real-time subscription for graphics gallery jobs
+ */
+export function subscribeGraphicsJobs(callback: (jobs: GraphicsJob[]) => void): () => void {
+  if (!isConfigValid) {
+    callback(getLocalGraphicsJobs());
+    return () => {};
+  }
+  const q = query(collection(db, 'graphics_jobs'), orderBy('createdAt', 'desc'));
+  return onSnapshot(q, (querySnapshot) => {
+    const jobs: GraphicsJob[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      jobs.push({
+        id: doc.id,
+        title: data.title || '',
+        category: data.category || 'General Design',
+        imageUrl: data.imageUrl || '',
+        description: data.description || '',
+        createdAt: data.createdAt || new Date().toISOString()
+      });
+    });
+    const finalJobs = jobs.length > 0 ? jobs : DEFAULT_GRAPHICS_JOBS;
+    saveLocalGraphicsJobs(finalJobs);
+    callback(finalJobs);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, 'graphics_jobs');
+  });
+}
+
+/**
+ * Real-time subscription for tech stack skills
+ */
+export function subscribeSkills(callback: (skills: any[]) => void): () => void {
+  if (!isConfigValid) {
+    callback(getLocalSkills());
+    return () => {};
+  }
+  const q = query(collection(db, 'skills'));
+  return onSnapshot(q, (querySnapshot) => {
+    const loadedSkills: any[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      loadedSkills.push({
+        id: doc.id,
+        name: data.name || '',
+        iconName: data.iconName || '',
+        imageUrl: data.imageUrl || ''
+      });
+    });
+    const finalSkills = loadedSkills.length > 0 ? loadedSkills : DEFAULT_SKILLS;
+    saveLocalSkills(finalSkills);
+    callback(finalSkills);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, 'skills');
+  });
 }

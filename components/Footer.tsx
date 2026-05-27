@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { SOCIAL_LINKS } from '../constants';
 import { ShieldCheckIcon } from './icons';
-import { getSiteSettings } from '../firebaseDb';
+import { subscribeSiteSettings } from '../firebaseDb';
 
 const CopyIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -22,17 +22,14 @@ const Footer: React.FC = () => {
   const [logoUrl, setLogoUrl] = useState<string>('');
 
   useEffect(() => {
-    async function loadLogo() {
-      try {
-        const settings = await getSiteSettings();
-        if (settings && settings.logo) {
-          setLogoUrl(settings.logo);
-        }
-      } catch (err) {
-        console.warn("Footer logo fetch idle.");
+    const unsubscribe = subscribeSiteSettings((settings) => {
+      if (settings && settings.logo) {
+        setLogoUrl(settings.logo);
+      } else {
+        setLogoUrl('');
       }
-    }
-    loadLogo();
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleCopyEmail = (e: React.MouseEvent) => {

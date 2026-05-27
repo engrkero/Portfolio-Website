@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { getSiteSettings } from '../firebaseDb';
+import { subscribeSiteSettings } from '../firebaseDb';
 
 // FIX: Removed import for 'MenuIcon' (not exported) and unused 'XIcon'. The menu button is CSS-based.
 
@@ -10,17 +10,14 @@ const Header: React.FC = () => {
   const [logoUrl, setLogoUrl] = useState<string>('');
 
   useEffect(() => {
-    async function loadLogo() {
-      try {
-        const settings = await getSiteSettings();
-        if (settings && settings.logo) {
-          setLogoUrl(settings.logo);
-        }
-      } catch (err) {
-        console.warn("Header logo fetch idle.");
+    const unsubscribe = subscribeSiteSettings((settings) => {
+      if (settings && settings.logo) {
+        setLogoUrl(settings.logo);
+      } else {
+        setLogoUrl('');
       }
-    }
-    loadLogo();
+    });
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {

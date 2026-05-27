@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getGraphicsJobs, getLocalGraphicsJobs } from '../firebaseDb';
+import { subscribeGraphicsJobs, getLocalGraphicsJobs } from '../firebaseDb';
 import type { GraphicsJob } from '../types';
 
 const CATEGORIES = ['All', 'Flyer Design', 'Logo', 'Branding', 'Banner Design', 'Poster', 'Others'];
@@ -12,25 +12,11 @@ const GraphicsGallery: React.FC = () => {
 
   // Load custom jobs from database
   useEffect(() => {
-    let active = true;
-    async function fetchJobs() {
-      try {
-        const list = await getGraphicsJobs();
-        if (active) {
-          setJobs(list);
-        }
-      } catch (err) {
-        console.error("Error loading graphics jobs", err);
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
-    }
-    fetchJobs();
-    return () => {
-      active = false;
-    };
+    const unsubscribe = subscribeGraphicsJobs((list) => {
+      setJobs(list);
+      setLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
 
   const filteredJobs = selectedCategory === 'All' 
