@@ -99,10 +99,10 @@ const Services: React.FC = () => {
                             
                             <div className="flex flex-col md:flex-row justify-center items-center gap-6">
                                 <a href="tel:+2349015183471" className="flex items-center gap-3 px-8 py-4 bg-white text-[#2A324B] rounded-full font-bold hover:bg-gray-100 transition-all transform hover:-translate-y-1 hover:shadow-lg">
-                                    <span>📞 Call Us: 09015183471</span>
+                                    <span><i className="fa-solid fa-phone mr-2 text-[#F8B462]"></i>Call Us: 09015183471</span>
                                 </a>
                                 <a href="mailto:kgsc.unical@gmail.com" className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#F0544F] to-[#ff7e79] text-white rounded-full font-bold hover:shadow-lg transition-all transform hover:-translate-y-1">
-                                    <span>✉️ Email: kgsc.unical@gmail.com</span>
+                                    <span><i className="fa-solid fa-envelope mr-2"></i>Email: kgsc.unical@gmail.com</span>
                                 </a>
                             </div>
                             <p className="mt-8 font-mono text-sm text-gray-500 tracking-widest">#WeSimplifyYourProcess</p>

@@ -1,15 +1,17 @@
-
 import React, { useState, useEffect } from 'react';
-import { PROJECTS } from '../constants';
-import type { Project } from '../types';
+import { 
+  getSiteSettings, 
+  saveSiteSettings, 
+  getGraphicsJobs, 
+  addGraphicsJob, 
+  deleteGraphicsJob 
+} from '../firebaseDb';
+import type { SiteSettings, GraphicsJob } from '../types';
 import { XIcon, PlusIcon, CodeIcon, BriefcaseIcon } from './icons';
 
 // Simple Icons for Admin
 const TrashIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-);
-const EditIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
 );
 const SaveIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
@@ -18,109 +20,156 @@ const SaveIcon = () => (
 const AdminPanel: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [password, setPassword] = useState('');
-    const [projects, setProjects] = useState<Project[]>([]);
-    const [editingProject, setEditingProject] = useState<Project | null>(null);
-    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<'gallery' | 'settings'>('gallery');
     
-    // Initial Form State
-    const emptyProject: Project = {
-        id: '',
+    // Site settings state
+    const [siteSettings, setSiteSettings] = useState<SiteSettings>({
+        ceoName: 'Keren Godwin Onen',
+        ceoBio: '',
+        ceoImage: '',
+        logo: '',
+        favicon: ''
+    });
+
+    // Gallery / Graphics jobs state
+    const [jobs, setJobs] = useState<GraphicsJob[]>([]);
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [formData, setFormData] = useState<Omit<GraphicsJob, 'id'>>({
         title: '',
-        category: 'UI/UX Design',
-        description: '',
+        category: 'Flyer Design',
         imageUrl: '',
-        tags: [],
-        liveUrl: '',
-        repoUrl: '',
-        longDescription: '',
-        detailImages: []
-    };
-    const [formData, setFormData] = useState<Project>(emptyProject);
-    const [tagInput, setTagInput] = useState('');
-    const [detailImagesInput, setDetailImagesInput] = useState('');
+        description: '',
+        createdAt: ''
+    });
+
+    const [loadingJobs, setLoadingJobs] = useState(false);
+    const [loadingSettings, setLoadingSettings] = useState(false);
+    const [savingSettings, setSavingSettings] = useState(false);
+    const [savingJob, setSavingJob] = useState(false);
 
     useEffect(() => {
-        // Load projects
-        const stored = localStorage.getItem('kgsc_projects');
-        if (stored) {
-            setProjects(JSON.parse(stored));
-        } else {
-            setProjects(PROJECTS);
-            localStorage.setItem('kgsc_projects', JSON.stringify(PROJECTS));
+        // Load settings and graphics jobs on authentication
+        if (isAuthenticated) {
+            fetchSettings();
+            fetchJobs();
         }
-    }, []);
+    }, [isAuthenticated]);
+
+    const fetchSettings = async () => {
+        setLoadingSettings(true);
+        try {
+            const data = await getSiteSettings();
+            setSiteSettings(data);
+        } catch (err) {
+            console.error("Error loading settings", err);
+        } finally {
+            setLoadingSettings(false);
+        }
+    };
+
+    const fetchJobs = async () => {
+        setLoadingJobs(true);
+        try {
+            const list = await getGraphicsJobs();
+            setJobs(list);
+        } catch (err) {
+            console.error("Error loading graphics jobs", err);
+        } finally {
+            setLoadingJobs(false);
+        }
+    };
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        if (password === 'admin123') {
+        // Plaintext entry key block
+        if (password === 'K5e3r7e3n6@') {
             setIsAuthenticated(true);
         } else {
             alert('Access Denied: Invalid Credentials');
         }
     };
 
-    const handleSave = () => {
-        const updatedProjects = [...projects];
-        
-        // Process tags and images
-        const processedTags = tagInput.split(',').map(t => t.trim()).filter(t => t !== '');
-        // Allow user to use current formData tags if they didn't touch the input, else use input
-        const finalTags = processedTags.length > 0 ? processedTags : formData.tags;
+    // Helper to read file and convert to base64 string automatically
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'favicon' | 'logo' | 'ceoImage' | 'imageUrl') => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
-        const processedImages = detailImagesInput.split(',').map(i => i.trim()).filter(i => i !== '');
-        const finalImages = processedImages.length > 0 ? processedImages : (formData.detailImages || []);
+        // Constraint check on larger files (Limit ~1.5mb for Firestore string payloads safely)
+        if (file.size > 1500000) {
+            alert("File is too large! Please select an optimized web graphics file under 1.5MB.");
+            return;
+        }
 
-        const projectToSave: Project = {
-            ...formData,
-            id: formData.id || `proj_${Date.now()}`,
-            tags: finalTags,
-            detailImages: finalImages
-        };
-
-        if (editingProject) {
-            // Edit mode
-            const index = updatedProjects.findIndex(p => p.id === editingProject.id);
-            if (index !== -1) {
-                updatedProjects[index] = projectToSave;
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64String = reader.result as string;
+            if (field === 'imageUrl') {
+                setFormData(prev => ({ ...prev, imageUrl: base64String }));
+            } else {
+                setSiteSettings(prev => ({ ...prev, [field]: base64String }));
             }
-        } else {
-            // Add mode
-            updatedProjects.unshift(projectToSave);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleSaveSettings = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSavingSettings(true);
+        try {
+            await saveSiteSettings(siteSettings);
+            alert("Site Assets database successfully updated!");
+            
+            // Instantly apply favicon to page context for verification
+            if (siteSettings.favicon) {
+                const link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+                if (link) {
+                    link.href = siteSettings.favicon;
+                }
+            }
+        } catch (err) {
+            alert("Error saving settings database: " + JSON.stringify(err));
+        } finally {
+            setSavingSettings(false);
+        }
+    };
+
+    const handleSaveJob = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.title || !formData.imageUrl) {
+            alert("Title and Image upload are mandatory!");
+            return;
         }
 
-        setProjects(updatedProjects);
-        localStorage.setItem('kgsc_projects', JSON.stringify(updatedProjects));
-        closeForm();
-        alert('Project successfully integrated into database.');
-    };
-
-    const handleDelete = (id: string) => {
-        if (confirm('Are you sure you want to purge this project node?')) {
-            const updatedProjects = projects.filter(p => p.id !== id);
-            setProjects(updatedProjects);
-            localStorage.setItem('kgsc_projects', JSON.stringify(updatedProjects));
+        setSavingJob(true);
+        try {
+            await addGraphicsJob(formData);
+            alert("Graphics Design job successfully recorded in Firebase Firestore!");
+            setFormData({
+                title: '',
+                category: 'Flyer Design',
+                imageUrl: '',
+                description: '',
+                createdAt: ''
+            });
+            setIsFormOpen(false);
+            fetchJobs(); // reload lists
+        } catch (err) {
+            alert("Error adding graphics node to database: " + JSON.stringify(err));
+        } finally {
+            setSavingJob(false);
         }
     };
 
-    const openEdit = (project: Project) => {
-        setEditingProject(project);
-        setFormData(project);
-        setTagInput(project.tags.join(', '));
-        setDetailImagesInput(project.detailImages?.join(', ') || '');
-        setIsFormOpen(true);
-    };
-
-    const openAdd = () => {
-        setEditingProject(null);
-        setFormData(emptyProject);
-        setTagInput('');
-        setDetailImagesInput('');
-        setIsFormOpen(true);
-    };
-
-    const closeForm = () => {
-        setIsFormOpen(false);
-        setEditingProject(null);
+    const handleDeleteJob = async (id: string) => {
+        if (confirm("Are you sure you want to purge this Graphics Design resource from the active database?")) {
+            try {
+                await deleteGraphicsJob(id);
+                alert("Graphics node deleted.");
+                fetchJobs();
+            } catch (err) {
+                alert("Error deleting job: " + JSON.stringify(err));
+            }
+        }
     };
 
     if (!isAuthenticated) {
@@ -132,14 +181,14 @@ const AdminPanel: React.FC = () => {
                             <BriefcaseIcon />
                          </div>
                     </div>
-                    <h2 className="text-2xl font-bold text-white mb-2">KGSC Admin Node</h2>
-                    <p className="text-gray-300 mb-6 text-sm">Secure Entry Point</p>
+                    <h2 className="text-2xl font-bold text-white mb-2">KGSC Command Center</h2>
+                    <p className="text-gray-300 mb-6 text-sm">Establish Secure Console Entry</p>
                     <form onSubmit={handleLogin} className="space-y-4">
                         <input 
                             type="password" 
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Enter Passkey"
+                            placeholder="Enter Console Key"
                             className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#F0544F] focus:ring-1 focus:ring-[#F0544F]"
                         />
                         <button 
@@ -163,185 +212,282 @@ const AdminPanel: React.FC = () => {
                         <div className="w-8 h-8 bg-[#F0544F] rounded-lg flex items-center justify-center">
                             <CodeIcon />
                         </div>
-                        <h1 className="text-xl font-bold tracking-tight">KGSC <span className="text-[#F8B462]">Command Center</span></h1>
+                        <h1 className="text-xl font-bold tracking-tight">KGSC <span className="text-[#F8B462]">Database Portal</span></h1>
                     </div>
                     <div className="flex items-center gap-4">
-                        <span className="text-xs text-green-400 font-mono hidden sm:inline-block">● SYSTEM ONLINE</span>
+                        <span className="text-xs text-green-400 font-mono">● FIREBASE LIVE</span>
                         <a href="/" className="text-sm text-gray-300 hover:text-white border border-gray-600 px-3 py-1 rounded hover:border-white transition-all">
-                            View Site
+                            View Website
                         </a>
                     </div>
                 </div>
             </header>
 
-            <main className="container mx-auto px-4 py-8">
-                <div className="flex justify-between items-center mb-8">
-                    <h2 className="text-2xl font-bold text-[#2A324B]">Project Repository</h2>
-                    <button 
-                        onClick={openAdd}
-                        className="flex items-center gap-2 bg-[#F0544F] text-white px-5 py-2.5 rounded-xl font-bold hover:bg-[#d64642] shadow-lg shadow-red-200 hover:scale-105 transition-all"
+            <main className="container mx-auto px-4 py-8 max-w-5xl">
+                {/* Operations Tabs */}
+                <div className="flex border-b border-gray-200 mb-8 gap-4">
+                    <button
+                        onClick={() => setActiveTab('gallery')}
+                        className={`flex items-center gap-2 pb-4 px-2 font-bold text-sm border-b-2 transition-all ${
+                            activeTab === 'gallery'
+                                ? 'border-[#F0544F] text-[#F0544F]'
+                                : 'border-transparent text-gray-500 hover:text-gray-800'
+                        }`}
                     >
-                        <PlusIcon /> New Project
+                        🎨 Manage Graphics Gallery
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('settings')}
+                        className={`flex items-center gap-2 pb-4 px-2 font-bold text-sm border-b-2 transition-all ${
+                            activeTab === 'settings'
+                                ? 'border-[#F0544F] text-[#F0544F]'
+                                : 'border-transparent text-gray-500 hover:text-gray-800'
+                        }`}
+                    >
+                        ⚙️ Global Assets & CEO config
                     </button>
                 </div>
 
-                {/* Project List */}
-                <div className="grid grid-cols-1 gap-4">
-                    {projects.map((project) => (
-                        <div key={project.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row gap-4 items-center transition-all hover:shadow-md">
-                            <div className="w-full md:w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                                <img src={project.imageUrl} alt={project.title} className="w-full h-full object-cover" />
+                {/* TAB 1: GRAPHICS GALLERY */}
+                {activeTab === 'gallery' && (
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <h2 className="text-2xl font-bold text-[#2A324B]">Graphics Design Gallery Jobs</h2>
+                                <p className="text-xs text-gray-500">Add, view, and wipe graphic design showcases stored in your cloud database.</p>
                             </div>
-                            <div className="flex-grow text-center md:text-left">
-                                <h3 className="font-bold text-lg text-[#2A324B]">{project.title}</h3>
-                                <p className="text-sm text-gray-500">{project.category}</p>
-                                <div className="text-xs text-gray-400 mt-1 line-clamp-1">{project.description}</div>
-                            </div>
-                            <div className="flex gap-2">
-                                <button 
-                                    onClick={() => openEdit(project)}
-                                    className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
-                                    title="Edit"
-                                >
-                                    <EditIcon />
-                                </button>
-                                <button 
-                                    onClick={() => handleDelete(project.id)}
-                                    className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
-                                    title="Delete"
-                                >
-                                    <TrashIcon />
-                                </button>
-                            </div>
+                            <button 
+                                onClick={() => setIsFormOpen(true)}
+                                className="flex items-center gap-2 bg-[#F0544F] text-white px-5 py-2.5 rounded-xl font-bold hover:bg-[#d64642] shadow-lg shadow-red-200 transition-all"
+                            >
+                                <PlusIcon /> New Gallery Item
+                            </button>
                         </div>
-                    ))}
-                </div>
+
+                        {loadingJobs ? (
+                            <div className="py-20 text-center text-gray-400 font-mono text-xs">RETRIVING GRAPHICS CATALOG...</div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {jobs.map((job) => (
+                                    <div key={job.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col justify-between">
+                                        <div className="relative aspect-video w-full bg-gray-50">
+                                            <img src={job.imageUrl} alt={job.title} className="w-full h-full object-cover" />
+                                            <span className="absolute top-2 left-2 px-2 py-0.5 text-[9px] font-bold uppercase bg-white/90 text-[#2a324b] rounded">
+                                                {job.category}
+                                            </span>
+                                        </div>
+                                        <div className="p-5 flex-grow">
+                                            <h3 className="font-bold text-lg text-[#2A324B] mb-1 leading-snug">{job.title}</h3>
+                                            <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed h-8">{job.description || 'No description supplied.'}</p>
+                                        </div>
+                                        <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center rounded-b-2xl">
+                                            <span className="text-[10px] text-gray-400 font-mono">
+                                                {job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Active'}
+                                            </span>
+                                            <button 
+                                                onClick={() => handleDeleteJob(job.id)}
+                                                className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors flex items-center gap-1 text-xs font-semibold"
+                                                title="Delete Job"
+                                            >
+                                                <TrashIcon /> Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* TAB 2: GLOBAL ASSETS & CEO SETTINGS */}
+                {activeTab === 'settings' && (
+                    <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-200 shadow-sm max-w-3xl">
+                        <div className="mb-6">
+                            <h2 className="text-2xl font-bold text-[#2A324B]">Static Assets & CEO Node Setup</h2>
+                            <p className="text-xs text-gray-500">Upload your Favicon, Studio Logo, CEO Profile Image, and manage biographical tags dynamically.</p>
+                        </div>
+
+                        {loadingSettings ? (
+                            <div className="py-12 text-center text-gray-400 font-mono text-xs">SYNCING GLOBAL ASSETS CODES...</div>
+                        ) : (
+                            <form onSubmit={handleSaveSettings} className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Favicon Section */}
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase block">Favicon (Select File)</label>
+                                        <input 
+                                            type="file" 
+                                            accept="image/png, image/x-icon, image/jpeg"
+                                            onChange={(e) => handleFileChange(e, 'favicon')}
+                                            className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#F0544F]/10 file:text-[#F0544F] hover:file:bg-[#F0544F]/20"
+                                        />
+                                        {siteSettings.favicon && (
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <img src={siteSettings.favicon} alt="favicon preview" className="w-8 h-8 object-contain rounded border border-gray-100" />
+                                                <span className="text-[10px] text-green-500 font-mono">Favicon Uploaded</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Logo Section */}
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase block">Studio Corporate Logo</label>
+                                        <input 
+                                            type="file" 
+                                            accept="image/*"
+                                            onChange={(e) => handleFileChange(e, 'logo')}
+                                            className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#F0544F]/10 file:text-[#F0544F] hover:file:bg-[#F0544F]/20"
+                                        />
+                                        {siteSettings.logo && (
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <img src={siteSettings.logo} alt="logo preview" className="h-8 object-contain rounded border border-gray-100" />
+                                                <span className="text-[10px] text-green-500 font-mono">Logo Loaded</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <hr className="border-gray-100" />
+
+                                <div className="space-y-4">
+                                    <h3 className="font-bold text-[#2A324B] text-base">CEO Profile Details</h3>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-gray-500 uppercase block">CEO Full Name</label>
+                                            <input 
+                                                type="text"
+                                                value={siteSettings.ceoName}
+                                                onChange={(e) => setSiteSettings(prev => ({...prev, ceoName: e.target.value}))}
+                                                className="w-full p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#F0544F]"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-gray-500 uppercase block">CEO Headshot Image</label>
+                                            <input 
+                                                type="file" 
+                                                accept="image/*"
+                                                onChange={(e) => handleFileChange(e, 'ceoImage')}
+                                                className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#F0544F]/10 file:text-[#F0544F] hover:file:bg-[#F0544F]/20"
+                                            />
+                                            {siteSettings.ceoImage && (
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <img src={siteSettings.ceoImage} alt="CEO headshot preview" className="w-10 h-10 object-cover rounded-full border border-gray-100" />
+                                                    <span className="text-[10px] text-green-500 font-mono">Headshot Uploaded</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase block">CEO Biographical Summary</label>
+                                        <textarea 
+                                            rows={4}
+                                            value={siteSettings.ceoBio}
+                                            onChange={(e) => setSiteSettings(prev => ({...prev, ceoBio: e.target.value}))}
+                                            className="w-full p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#F0544F]"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 flex justify-end">
+                                    <button
+                                        type="submit"
+                                        disabled={savingSettings}
+                                        className="flex items-center gap-2 bg-[#2A324B] text-white px-8 py-3.5 rounded-xl font-bold hover:bg-black transition-all shadow-md active:scale-95 disabled:opacity-50"
+                                    >
+                                        <SaveIcon /> {savingSettings ? "Writing Registry..." : "Save Site Configuration"}
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+                    </div>
+                )}
             </main>
 
-            {/* Edit/Add Modal */}
+            {/* Form Drawer / Modal for adding gallery item */}
             {isFormOpen && (
                 <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in">
-                        <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex justify-between items-center z-10">
-                            <h3 className="text-xl font-bold text-[#2A324B]">
-                                {editingProject ? 'Edit Node' : 'Initialize New Node'}
-                            </h3>
-                            <button onClick={closeForm} className="text-gray-400 hover:text-red-500 p-1">
+                    <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-scale-in">
+                        <div className="bg-gray-50 p-6 border-b border-gray-100 flex justify-between items-center">
+                            <h3 className="text-lg font-bold text-[#2A324B]">Add Graphics Work Node</h3>
+                            <button onClick={() => setIsFormOpen(false)} className="text-gray-400 hover:text-black">
                                 <XIcon />
                             </button>
                         </div>
-                        
-                        <div className="p-6 space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-gray-500 uppercase">Project Title</label>
-                                    <input 
-                                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#F0544F] focus:border-transparent" 
-                                        value={formData.title} 
-                                        onChange={e => setFormData({...formData, title: e.target.value})}
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-gray-500 uppercase">Category</label>
-                                    <select 
-                                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#F0544F]" 
-                                        value={formData.category} 
-                                        onChange={e => setFormData({...formData, category: e.target.value})}
-                                    >
-                                        <option>UI/UX Design</option>
-                                        <option>Frontend Development</option>
-                                        <option>Graphic Design</option>
-                                        <option>Web Development</option>
-                                        <option>Branding</option>
-                                    </select>
-                                </div>
-                            </div>
-
+                        <form onSubmit={handleSaveJob} className="p-6 space-y-4">
                             <div className="space-y-1">
-                                <label className="text-xs font-bold text-gray-500 uppercase">Short Description</label>
-                                <textarea 
-                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#F0544F]" 
-                                    rows={2}
-                                    value={formData.description} 
-                                    onChange={e => setFormData({...formData, description: e.target.value})}
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-gray-500 uppercase">Long Description (For Modal)</label>
-                                <textarea 
-                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#F0544F]" 
-                                    rows={4}
-                                    value={formData.longDescription || ''} 
-                                    onChange={e => setFormData({...formData, longDescription: e.target.value})}
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-gray-500 uppercase">Main Image URL</label>
+                                <label className="text-xs font-bold text-gray-500 uppercase">Project Title</label>
                                 <input 
-                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#F0544F]" 
-                                    placeholder="https://..."
-                                    value={formData.imageUrl} 
-                                    onChange={e => setFormData({...formData, imageUrl: e.target.value})}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-gray-500 uppercase">Live URL</label>
-                                    <input 
-                                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#F0544F]" 
-                                        value={formData.liveUrl || ''} 
-                                        onChange={e => setFormData({...formData, liveUrl: e.target.value})}
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-gray-500 uppercase">Repo URL</label>
-                                    <input 
-                                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#F0544F]" 
-                                        value={formData.repoUrl || ''} 
-                                        onChange={e => setFormData({...formData, repoUrl: e.target.value})}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-gray-500 uppercase">Tags (comma separated)</label>
-                                <input 
-                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#F0544F]" 
-                                    placeholder="React, Design, Figma"
-                                    value={tagInput} 
-                                    onChange={e => setTagInput(e.target.value)}
+                                    type="text"
+                                    className="w-full p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#F0544F]"
+                                    value={formData.title}
+                                    onChange={e => setFormData(prev => ({...prev, title: e.target.value}))}
+                                    required
                                 />
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-xs font-bold text-gray-500 uppercase">Gallery Images URLs (comma separated)</label>
+                                <label className="text-xs font-bold text-gray-500 uppercase">Category</label>
+                                <select 
+                                    className="w-full p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#F0544F]"
+                                    value={formData.category}
+                                    onChange={e => setFormData(prev => ({...prev, category: e.target.value}))}
+                                >
+                                    <option>Flyer Design</option>
+                                    <option>Logo</option>
+                                    <option>Branding</option>
+                                    <option>Banner Design</option>
+                                    <option>Poster</option>
+                                    <option>Others</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-gray-500 uppercase">Overview / Description</label>
                                 <textarea 
-                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#F0544F]" 
-                                    rows={2}
-                                    placeholder="https://img1.com, https://img2.com"
-                                    value={detailImagesInput} 
-                                    onChange={e => setDetailImagesInput(e.target.value)}
+                                    rows={3}
+                                    className="w-full p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#F0544F]"
+                                    value={formData.description}
+                                    onChange={e => setFormData(prev => ({...prev, description: e.target.value}))}
                                 />
                             </div>
-                        </div>
 
-                        <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 rounded-b-2xl">
-                            <button 
-                                onClick={closeForm}
-                                className="px-5 py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button 
-                                onClick={handleSave}
-                                className="flex items-center gap-2 px-6 py-2 bg-[#2A324B] text-white font-bold rounded-lg hover:bg-black transition-colors"
-                            >
-                                <SaveIcon /> Save Changes
-                            </button>
-                        </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase block">Select Graphics File (Limit 1.5MB)</label>
+                                <input 
+                                    type="file" 
+                                    accept="image/*"
+                                    onChange={(e) => handleFileChange(e, 'imageUrl')}
+                                    required
+                                    className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#F0544F]/10 file:text-[#F0544F] hover:file:bg-[#F0544F]/20"
+                                />
+                                {formData.imageUrl && (
+                                    <div className="relative aspect-video w-full rounded-xl overflow-hidden border mt-2">
+                                        <img src={formData.imageUrl} alt="upload preview" className="w-full h-full object-cover" />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="pt-4 flex justify-end gap-3 border-t border-gray-100">
+                                <button 
+                                    type="button" 
+                                    onClick={() => setIsFormOpen(false)}
+                                    className="px-5 py-2.5 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    disabled={savingJob}
+                                    className="px-6 py-2.5 bg-[#2A324B] text-white font-bold rounded-xl hover:bg-black transition-all disabled:opacity-50"
+                                >
+                                    {savingJob ? "Uploading..." : "Publish Job"}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

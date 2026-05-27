@@ -1,11 +1,27 @@
 
 import React, { useState, useEffect } from 'react';
+import { getSiteSettings } from '../firebaseDb';
 
 // FIX: Removed import for 'MenuIcon' (not exported) and unused 'XIcon'. The menu button is CSS-based.
 
 const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string>('');
+
+  useEffect(() => {
+    async function loadLogo() {
+      try {
+        const settings = await getSiteSettings();
+        if (settings && settings.logo) {
+          setLogoUrl(settings.logo);
+        }
+      } catch (err) {
+        console.warn("Header logo fetch idle.");
+      }
+    }
+    loadLogo();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,6 +63,7 @@ const Header: React.FC = () => {
     { href: '#skills', label: 'Skills' },
     { href: '#experience', label: 'Experience' },
     { href: '#portfolio', label: 'Portfolio' },
+    { href: '#graphics', label: 'Graphics' }, // Added Graphics Gallery Link
     { href: '#services', label: 'Services' }, // Added Services Link
     { href: '#achievements', label: 'Achievements' },
     { href: '#education', label: 'Education' },
@@ -63,11 +80,17 @@ const Header: React.FC = () => {
         }`}
       >
         <div className="container mx-auto px-6 flex justify-between items-center">
-          <a href="#home" onClick={handleSmoothScroll} className="text-3xl font-extrabold tracking-tighter z-50">
-            <span className="text-[#2A324B]">K</span>
-            <span className="text-[#F0544F]">G</span>
-            <span className="text-[#F8B462]">S</span>
-            <span className="text-[#2A324B]">C</span>
+          <a href="#home" onClick={handleSmoothScroll} className="text-3xl font-extrabold tracking-tighter z-50 flex items-center gap-2">
+            {logoUrl ? (
+              <img src={logoUrl} alt="KGSC Logo" className="h-10 object-contain hover:scale-105 transition-transform" />
+            ) : (
+              <>
+                <span className="text-[#2A324B]">K</span>
+                <span className="text-[#F0544F]">G</span>
+                <span className="text-[#F8B462]">S</span>
+                <span className="text-[#2A324B]">C</span>
+              </>
+            )}
           </a>
 
           {/* Desktop Navigation */}

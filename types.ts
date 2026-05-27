@@ -42,3 +42,21 @@ export interface Project {
   longDescription?: string;
   detailImages?: string[];
 }
+
+export interface SiteSettings {
+  id?: string;
+  favicon?: string;
+  logo?: string;
+  ceoImage?: string;
+  ceoName: string;
+  ceoBio?: string;
+}
+
+export interface GraphicsJob {
+  id: string;
+  title: string;
+  category: string;
+  imageUrl: string;
+  description?: string;
+  createdAt: string;
+}

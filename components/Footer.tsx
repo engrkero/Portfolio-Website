@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SOCIAL_LINKS } from '../constants';
 import { ShieldCheckIcon } from './icons';
+import { getSiteSettings } from '../firebaseDb';
 
 const CopyIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -18,6 +19,21 @@ const CheckIcon = () => (
 
 const Footer: React.FC = () => {
   const [copied, setCopied] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string>('');
+
+  useEffect(() => {
+    async function loadLogo() {
+      try {
+        const settings = await getSiteSettings();
+        if (settings && settings.logo) {
+          setLogoUrl(settings.logo);
+        }
+      } catch (err) {
+        console.warn("Footer logo fetch idle.");
+      }
+    }
+    loadLogo();
+  }, []);
 
   const handleCopyEmail = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -31,13 +47,17 @@ const Footer: React.FC = () => {
       <div className="container mx-auto px-6 text-center">
         
         {/* Logo Section */}
-        <div className="mb-10 transform hover:scale-105 transition-transform duration-300">
-            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tighter inline-block">
-                <span className="text-white">K</span>
-                <span className="text-[#F0544F]">G</span>
-                <span className="text-[#F8B462]">S</span>
-                <span className="text-white">C</span>
-            </h2>
+        <div className="mb-10 transform hover:scale-105 transition-transform duration-300 flex justify-center">
+            {logoUrl ? (
+              <img src={logoUrl} alt="KGSC Corporate Logo" className="h-14 object-contain" />
+            ) : (
+              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tighter inline-block">
+                  <span className="text-white">K</span>
+                  <span className="text-[#F0544F]">G</span>
+                  <span className="text-[#F8B462]">S</span>
+                  <span className="text-white">C</span>
+              </h2>
+            )}
         </div>
 
         {/* Contact Info Section */}
@@ -46,7 +66,7 @@ const Footer: React.FC = () => {
             {/* Email Pill */}
             <div className="flex items-center gap-3 bg-white/10 px-6 py-3 rounded-full border border-white/10 hover:bg-white/20 transition-all duration-300 relative group">
                <a href="mailto:kgsc.unical@gmail.com" className="flex items-center gap-3">
-                  <span className="text-[#F0544F]">✉️</span>
+                  <i className="fa-solid fa-envelope text-[#F0544F]"></i>
                   kgsc.unical@gmail.com
                </a>
                <div className="w-[1px] h-5 bg-gray-500 mx-1"></div>
@@ -66,7 +86,7 @@ const Footer: React.FC = () => {
 
             {/* Phone Pill */}
             <a href="tel:+2349015183471" className="flex items-center gap-3 bg-white/10 px-6 py-3 rounded-full border border-white/10 hover:bg-white/20 transition-all duration-300">
-                <span className="text-[#F8B462]">📞</span>
+                <i className="fa-solid fa-phone text-[#F8B462]"></i>
                 +234 901 518 3471
             </a>
         </div>
@@ -86,6 +106,21 @@ const Footer: React.FC = () => {
                 </a>
             ))}
         </div>
+
+        {/* LinkedIn Badge */}
+        <div className="flex justify-center mb-12">
+            <div 
+                className="badge-base LI-profile-badge" 
+                data-locale="en_US" 
+                data-size="medium" 
+                data-theme="dark" 
+                data-type="VERTICAL" 
+                data-vanity="k-g-s-c" 
+                data-version="v1"
+            >
+                <a className="badge-base__link LI-simple-link" href="https://ng.linkedin.com/in/k-g-s-c?trk=profile-badge">Keren Godwin Onen</a>
+            </div>
+        </div>
         
         {/* Divider */}
         <div className="w-24 h-1 bg-gradient-to-r from-[#F0544F] to-[#F8B462] mx-auto rounded-full mb-10"></div>
@@ -102,6 +137,9 @@ const Footer: React.FC = () => {
             <div className="space-y-1">
                 <p className="font-medium text-gray-300">&copy; {new Date().getFullYear()} KERO GRAPHICS STUDIO CODE.</p>
                 <p className="text-xs">Designed & Developed with <span className="text-[#F0544F]">♥</span> in Calabar.</p>
+                <div className="pt-3 text-[10px] text-gray-500 hover:text-[#F0544F] transition-all font-mono tracking-wider">
+                  <a href="#admin">:: DATABASE COMMAND CONSOLE ::</a>
+                </div>
             </div>
         </div>
       </div>

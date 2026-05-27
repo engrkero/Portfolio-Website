@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
@@ -15,19 +14,64 @@ import Preloader from './components/Preloader';
 import BackToTopButton from './components/BackToTopButton';
 import WhatsAppButton from './components/WhatsAppButton';
 import LocationAlert from './components/LocationAlert';
+import AdminPanel from './components/AdminPanel';
+import GraphicsGallery from './components/GraphicsGallery';
+import CEOProfileCard from './components/CEOProfileCard';
+import { getSiteSettings } from './firebaseDb';
 
 function App() {
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
+  // Check URL pathname or hash to render either Admin Portal or main portfolio
+  useEffect(() => {
+    const handleRouteCheck = () => {
+      const isRouteAdmin = window.location.pathname === '/admin' || window.location.hash === '#admin';
+      setIsAdmin(isRouteAdmin);
+    };
+
+    handleRouteCheck();
+    window.addEventListener('hashchange', handleRouteCheck);
+    window.addEventListener('popstate', handleRouteCheck);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleRouteCheck);
+      window.removeEventListener('popstate', handleRouteCheck);
+    };
+  }, []);
+
+  // Preloader duration effect
   useEffect(() => {
     const timer = setTimeout(() => {
          setLoading(false);
-    }, 2500); // Preloader duration
+    }, 2500);
 
     return () => {
         clearTimeout(timer);
     };
   }, []);
+
+  // Dynamic favicon registry sync
+  useEffect(() => {
+    async function syncFavicon() {
+      try {
+        const settings = await getSiteSettings();
+        if (settings && settings.favicon) {
+          const links: NodeListOf<HTMLLinkElement> = document.querySelectorAll("link[rel*='icon']");
+          links.forEach(link => {
+            link.href = settings.favicon || '';
+          });
+        }
+      } catch (err) {
+        console.warn("Bootstrap config sync idle.");
+      }
+    }
+    syncFavicon();
+  }, []);
+
+  if (isAdmin) {
+    return <AdminPanel />;
+  }
 
   return (
     <>
@@ -38,10 +82,14 @@ function App() {
           <Header />
           <main>
             <Hero />
+            {/* CEO Profile Card - 3D effect */}
+            <CEOProfileCard />
             <About />
             <Skills />
             <Experience />
             <Portfolio />
+            {/* Dynamic Graphics Design gallery loaded from Firestore database */}
+            <GraphicsGallery />
             <Services />
             <Achievements />
             <Education />

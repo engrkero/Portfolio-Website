@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "SiteSettings": {
+      "title": "SiteSettings",
+      "description": "Global custom assets and details for the studio.",
+      "type": "object",
+      "properties": {
+        "favicon": {
+          "type": "string",
+          "description": "Base64 data URL of the website favicon"
+        },
+        "logo": {
+          "type": "string",
+          "description": "Base64 data URL or URL of the studio logo"
+        },
+        "ceoImage": {
+          "type": "string",
+          "description": "Base64 data URL or URL of the CEO's profile picture"
+        },
+        "ceoName": {
+          "type": "string",
+          "description": "The name of the CEO/Founder"
+        },
+        "ceoBio": {
+          "type": "string",
+          "description": "A short bio of the CEO/Founder"
+        }
+      },
+      "required": ["ceoName"]
+    },
+    "GraphicsJob": {
+      "title": "GraphicsJob",
+      "description": "A graphics design job showing high-quality visual outputs in the gallery",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Title of the design job"
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the graphics work (e.g., Flyer, Branding, Logo, Poster)"
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "Base64 data URL or direct image URL"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the job or clients request"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this job node was registered"
+        }
+      },
+      "required": ["title", "imageUrl"]
+    }
+  },
+  "firestore": {
+    "site_settings/{settingId}": {
+      "schema": "SiteSettings",
+      "description": "Single document holding the active configurations of the studio site assets"
+    },
+    "graphics_jobs/{jobId}": {
+      "schema": "GraphicsJob",
+      "description": "Collection of graphics design works for the portfolio display gallery"
+    }
+  }
+}
