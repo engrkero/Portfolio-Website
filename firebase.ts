@@ -10,7 +10,7 @@ const localFirebaseConfig: any = configKeys.length > 0 ? (configs[configKeys[0]]
 
 // Support modern secure environment variables for production environments
 // If not specified, fall back safely to the local configurations file (ignored in git)
-const firebaseConfig = {
+const rawConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || localFirebaseConfig.apiKey,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || localFirebaseConfig.authDomain,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || localFirebaseConfig.projectId,
@@ -20,12 +20,30 @@ const firebaseConfig = {
   firestoreDatabaseId: import.meta.env.VITE_FIREBASE_DATABASE_ID || localFirebaseConfig.firestoreDatabaseId,
 };
 
+// Check if credentials are valid to prevent app startup crash in public production deployments
+const isConfigValid = !!(rawConfig.apiKey && rawConfig.projectId && rawConfig.apiKey !== 'your_firebase_api_key_here');
+
+const firebaseConfig = isConfigValid ? rawConfig : {
+  apiKey: "AIzaSyPlaceholderKeysToPreventCrashesOnPublicBuilds",
+  authDomain: "placeholder-project.firebaseapp.com",
+  projectId: "placeholder-project",
+  storageBucket: "placeholder-project.appspot.com",
+  messagingSenderId: "1234567890",
+  appId: "1:1234567890:web:abcdef123456",
+  firestoreDatabaseId: undefined
+};
+
+if (!isConfigValid) {
+  console.warn("Firebase configuration was incomplete or missing. Falling back to placeholder configuration to prevent startup crashes. Define VITE_FIREBASE_API_KEY etc to run with Firestore.");
+}
+
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || undefined);
+export const db = getFirestore(app);
 export const auth = getAuth();
 
 // Validate Connection to Firestore on initial boot
 async function testConnection() {
+  if (!isConfigValid) return;
   try {
     await getDocFromServer(doc(db, 'site_settings', 'active'));
   } catch (error) {
@@ -35,3 +53,4 @@ async function testConnection() {
   }
 }
 testConnection();
+
