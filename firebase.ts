@@ -1,7 +1,12 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
-import localFirebaseConfig from './firebase-applet-config.json';
+
+// Safely probe for local firebase config dynamic container using Vite's fallback resolver
+// This avoids build time hard errors on production/CI systems if firebase-applet-config.json is absent
+const configs = import.meta.glob('./firebase-applet-config.json', { eager: true });
+const configKeys = Object.keys(configs);
+const localFirebaseConfig: any = configKeys.length > 0 ? (configs[configKeys[0]] as any).default || configs[configKeys[0]] : {};
 
 // Support modern secure environment variables for production environments
 // If not specified, fall back safely to the local configurations file (ignored in git)
