@@ -17,7 +17,7 @@ import LocationAlert from './components/LocationAlert';
 import AdminPanel from './components/AdminPanel';
 import GraphicsGallery from './components/GraphicsGallery';
 import CEOProfileCard from './components/CEOProfileCard';
-import { getSiteSettings } from './firebaseDb';
+import { subscribeSiteSettings } from './firebaseDb';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -53,20 +53,15 @@ function App() {
 
   // Dynamic favicon registry sync
   useEffect(() => {
-    async function syncFavicon() {
-      try {
-        const settings = await getSiteSettings();
-        if (settings && settings.favicon) {
-          const links: NodeListOf<HTMLLinkElement> = document.querySelectorAll("link[rel*='icon']");
-          links.forEach(link => {
-            link.href = settings.favicon || '';
-          });
-        }
-      } catch (err) {
-        console.warn("Bootstrap config sync idle.");
+    const unsubscribe = subscribeSiteSettings((settings) => {
+      if (settings && settings.favicon) {
+        const links: NodeListOf<HTMLLinkElement> = document.querySelectorAll("link[rel*='icon']");
+        links.forEach(link => {
+          link.href = settings.favicon || '';
+        });
       }
-    }
-    syncFavicon();
+    });
+    return () => unsubscribe();
   }, []);
 
   if (isAdmin) {

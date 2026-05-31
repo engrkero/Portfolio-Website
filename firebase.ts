@@ -11,13 +11,13 @@ const localFirebaseConfig: any = configKeys.length > 0 ? (configs[configKeys[0]]
 // Support modern secure environment variables for production environments
 // If not specified, fall back safely to the local configurations file (ignored in git)
 const rawConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || localFirebaseConfig.apiKey,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || localFirebaseConfig.authDomain,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || localFirebaseConfig.projectId,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || localFirebaseConfig.storageBucket,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || localFirebaseConfig.messagingSenderId,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || localFirebaseConfig.appId,
-  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_DATABASE_ID || localFirebaseConfig.firestoreDatabaseId,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || localFirebaseConfig.apiKey || "AIzaSyCR74fqRrUpBB13grVOvrS9hXQ1Et7G07I",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || localFirebaseConfig.authDomain || "sapient-biplane-447816-k5.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || localFirebaseConfig.projectId || "sapient-biplane-447816-k5",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || localFirebaseConfig.storageBucket || "sapient-biplane-447816-k5.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || localFirebaseConfig.messagingSenderId || "430686113366",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || localFirebaseConfig.appId || "1:430686113366:web:2447f4215ac9cfeb0075f7",
+  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_DATABASE_ID || localFirebaseConfig.firestoreDatabaseId || "ai-studio-9a1e9c79-f399-4be3-97b2-f874ee840574",
 };
 
 // Check if credentials are valid to prevent app startup crash in public production deployments
